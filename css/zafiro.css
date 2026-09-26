@@ -340,12 +340,13 @@ legend { font-size: 0.85rem; letter-spacing: 0.1em; color: var(--plata); margin-
 .visor-prev { left: 0.6rem; top: 50%; translate: 0 -50%; }
 .visor-sig { right: 0.6rem; top: 50%; translate: 0 -50%; }
 
-/* ============ Compartir (se transforma en rosa) ============ */
+/* ============ Compartir: ícono de compartir; al tocar gira y se abre una rosa ============ */
 .compartir {
   position: fixed; right: 1rem; bottom: calc(env(safe-area-inset-bottom) + 4.6rem); z-index: 80;
-  width: 3rem; height: 3rem; padding: 0; border-radius: 50%;
-  border: 1px solid var(--linea); background: rgba(11, 22, 51, 0.8); color: var(--plata);
-  display: grid; place-items: center;
+  height: 3rem; padding: 0 1.05rem 0 0.5rem; border-radius: 999px;
+  border: 1px solid var(--linea); background: rgba(11, 22, 51, 0.85); color: var(--estrella);
+  display: flex; align-items: center; gap: 0.45rem;
+  font: 400 0.78rem var(--f-texto); letter-spacing: 0.14em; text-transform: uppercase;
   -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
 }
 .compartir svg { width: 2rem; height: 2rem; overflow: visible; }
@@ -356,29 +357,27 @@ legend { font-size: 0.85rem; letter-spacing: 0.1em; color: var(--plata); margin-
 .c-interno { fill: var(--zafiro-vivo); }
 .c-centro { fill: none; stroke: var(--estrella); stroke-width: 1.3; opacity: 0; }
 .c-hoja { fill: var(--zafiro-hondo); stroke: var(--plata-suave); stroke-width: 0.8; transform: scale(0); }
-.compartir-texto {
-  position: absolute; right: calc(100% + 0.6rem); top: 50%; translate: 0.5rem -50%;
-  padding: 0.35rem 0.8rem; border-radius: 999px; background: var(--plata); color: var(--noche);
-  font-size: 0.78rem; letter-spacing: 0.08em; white-space: nowrap; opacity: 0; pointer-events: none;
-  transition: opacity 0.4s, translate 0.4s;
-}
+
 .compartir.entra { animation: c-aparece 0.6s cubic-bezier(.2,1.4,.4,1) both; }
-.compartir.entra .c-share { animation: c-gira-sale 0.7s cubic-bezier(.6,0,.4,1) 0.9s forwards; }
-.compartir.entra .c-petalo { animation: c-florece 0.9s cubic-bezier(.2,1.1,.3,1) calc(1.3s + var(--k) * 70ms) forwards; }
-.compartir.entra .c-hoja { animation: c-hoja 0.6s ease 1.9s forwards; }
-.compartir.entra .c-centro { animation: c-centro 0.6s ease 2s forwards; }
-.compartir.entra .compartir-texto { animation: c-texto 3.2s ease 2.4s both; }
-.compartir.brilla svg { animation: c-brillo 1.2s ease; }
-@keyframes c-aparece { from { transform: scale(0) rotate(-90deg); opacity: 0; } }
+/* al tocar: el ícono gira y sale, y la rosa florece */
+.compartir.girando svg { animation: c-giro 1.3s cubic-bezier(.5,0,.3,1); }
+.compartir.girando .c-share { animation: c-gira-sale 0.55s cubic-bezier(.6,0,.4,1) forwards; }
+.compartir.girando .c-petalo { animation: c-florece 0.8s cubic-bezier(.2,1.1,.3,1) calc(0.35s + var(--k) * 60ms) forwards; }
+.compartir.girando .c-hoja { animation: c-hoja 0.5s ease 0.8s forwards; }
+.compartir.girando .c-centro { animation: c-centro 0.5s ease 0.9s forwards; }
+/* de regreso: vuelve el ícono de compartir */
+.compartir.vuelve .c-share { animation: c-vuelve 0.5s cubic-bezier(.2,1.3,.4,1) both; }
+.compartir.brilla .c-share { animation: c-brillo 1.2s ease; }
+@keyframes c-aparece { from { transform: scale(0.4); opacity: 0; } }
+@keyframes c-giro { to { transform: rotate(360deg); } }
 @keyframes c-gira-sale { to { transform: rotate(200deg) scale(0.1); opacity: 0; } }
 @keyframes c-florece { from { transform: rotate(calc(var(--r) - 80deg)) scale(0); } to { transform: rotate(var(--r)) scale(var(--s, 1)); } }
 @keyframes c-hoja { to { transform: scale(1); } }
 @keyframes c-centro { to { opacity: 1; } }
-@keyframes c-texto { 0%, 100% { opacity: 0; translate: 0.5rem -50%; } 12%, 85% { opacity: 1; translate: 0 -50%; } }
-@keyframes c-brillo { 40% { transform: rotate(18deg) scale(1.12); } }
+@keyframes c-vuelve { from { transform: rotate(-160deg) scale(0.1); opacity: 0; } }
+@keyframes c-brillo { 40% { transform: rotate(-14deg) scale(1.12); } }
 @media (prefers-reduced-motion: reduce) {
-  .compartir.entra, .compartir.entra * { animation-duration: 1ms !important; animation-delay: 0s !important; }
-  .compartir.entra .compartir-texto { animation: none; }
+  .compartir *, .compartir { animation-duration: 1ms !important; animation-delay: 0s !important; }
 }
 
 /* ============ Música y aviso ============ */

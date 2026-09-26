@@ -9,7 +9,7 @@ Invitación digital estática (HTML/CSS/JS, sin build) con rosa 3D que se abre c
   que acompaña todo el scroll. Cada sección dice dónde va la rosa con `data-rosa="izq|der|cierre|final"`.
   Sin WebGL usa `img/rosa-*.webp`. Con "reducir movimiento" no viaja.
 - `img/marco-*.webp`: marco de rosas del original, recoloreado a plata.
-- Botón de compartir (menú nativo; sin él, copia el enlace) que se transforma en rosa al aparecer.
+- Botón "Compartir" (menú nativo; sin él, copia el enlace): al tocarlo el ícono gira y se abre una rosa.
 - Al recargar, la invitación siempre empieza desde el sobre.
 - `js/album.js`: subida con compresión en el navegador (~1600 px, ≤600 KB + miniatura de 480 px).
 - `supabase/setup.sql`: bucket con límite de 2 MB, sin UPDATE anónimo y validación de URLs.

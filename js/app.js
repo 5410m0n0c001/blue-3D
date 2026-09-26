@@ -137,7 +137,16 @@ addEventListener('pageshow', (e) => { if (e.persisted) location.reload(); }); //
   }));
 
   // ---------- Compartir invitación ----------
+  // El menú se abre en el mismo toque (Safari lo exige) mientras el ícono gira y florece en rosa;
+  // al cerrarse, la rosa vuelve a ser el ícono de compartir.
+  let regreso;
   btnCompartir.addEventListener('click', async () => {
+    clearTimeout(regreso);
+    btnCompartir.classList.remove('vuelve', 'brilla', 'girando');
+    void btnCompartir.offsetWidth; // reinicia la animación si se toca dos veces
+    btnCompartir.classList.add('girando');
+    const inicio = performance.now();
+
     const datos = {
       title: document.title,
       text: 'Te invito a celebrar mis XV años. ¡Una Noche de Zafiro!',
@@ -149,11 +158,17 @@ addEventListener('pageshow', (e) => { if (e.persisted) location.reload(); }); //
       try { await navigator.clipboard.writeText(datos.url); window.avisar('Enlace copiado, ¡compártelo!'); }
       catch { window.avisar(datos.url); }
     }
+    // deja ver la rosa abierta al menos ~2.5 s y luego regresa al ícono
+    const espera = Math.max(1200, 2500 - (performance.now() - inicio));
+    regreso = setTimeout(() => {
+      btnCompartir.classList.remove('girando');
+      btnCompartir.classList.add('vuelve');
+    }, espera);
   });
   // un destello suave de vez en cuando para recordar que existe
   setInterval(() => {
-    if (btnCompartir.hidden) return;
-    btnCompartir.classList.remove('brilla'); void btnCompartir.offsetWidth; btnCompartir.classList.add('brilla');
+    if (btnCompartir.hidden || btnCompartir.classList.contains('girando')) return;
+    btnCompartir.classList.remove('brilla', 'vuelve'); void btnCompartir.offsetWidth; btnCompartir.classList.add('brilla');
   }, 14000);
 
   // ---------- WhatsApp: buzón y confirmación ----------
