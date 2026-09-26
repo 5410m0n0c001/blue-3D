@@ -115,7 +115,7 @@ svg { width: 1.25em; height: 1.25em; fill: none; stroke: currentColor; stroke-wi
 .sobre.abriendo { opacity: 0; transform: translateY(-6%); pointer-events: none; }
 
 /* ============ Portada con rosa ============ */
-main { position: relative; }
+main { position: relative; z-index: 1; overflow-x: clip; }
 .portada { height: 290svh; position: relative; }
 .portada-escena {
   position: sticky; top: 0; height: 100svh; overflow: hidden;
@@ -128,9 +128,21 @@ main { position: relative; }
   opacity: clamp(0, calc(1 - var(--p) * 1.2 + 0.5), 1);
 }
 .rosa-slot { position: relative; width: min(100%, 36rem); align-self: stretch; justify-self: center; min-height: 0; }
-.rosa-slot canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; display: block; }
-.rosa-respaldo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; transition: opacity 0.6s; }
-.rosa-slot.rosa-lista .rosa-respaldo { opacity: 0; }
+.rosa-respaldo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+body.rosa-3d .rosa-respaldo { display: none; }
+
+/* Capa fija de la rosa: detrás del contenido, delante del cielo */
+.rosa-escena { position: fixed; inset: 0; z-index: 0; pointer-events: none; will-change: opacity; }
+.rosa-escena canvas { display: block; width: 100% !important; height: 100% !important; }
+
+/* Marco de rosas plateadas en las cuatro esquinas (adaptado del original) */
+.marco img { position: fixed; z-index: 3; pointer-events: none; width: clamp(6.5rem, 29vw, 12rem); height: auto; opacity: 0.9; }
+.marco-si { top: 0; left: 0; }
+.marco-sd { top: 0; right: 0; }
+.marco-ii { bottom: 0; left: 0; }
+.marco-id { bottom: 0; right: 0; }
+body.sobre-cerrado .marco img { opacity: 0; }
+.marco img { transition: opacity 1.4s ease 1.2s; }
 .portada-nombre {
   text-align: center;
   opacity: clamp(0, calc((var(--p) - 0.5) * 4), 1);
@@ -160,8 +172,8 @@ main { position: relative; }
 .retrato-foto { margin: 0; }
 .retrato-foto img {
   width: 100%;
-  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 98%);
-          mask-image: linear-gradient(to bottom, #000 55%, transparent 98%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 58%, transparent 98%);
+          mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 58%, transparent 98%);
 }
 .retrato-frase {
   position: relative; margin: -9rem var(--lado) 0; max-width: 20rem;
@@ -328,6 +340,47 @@ legend { font-size: 0.85rem; letter-spacing: 0.1em; color: var(--plata); margin-
 .visor-prev { left: 0.6rem; top: 50%; translate: 0 -50%; }
 .visor-sig { right: 0.6rem; top: 50%; translate: 0 -50%; }
 
+/* ============ Compartir (se transforma en rosa) ============ */
+.compartir {
+  position: fixed; right: 1rem; bottom: calc(env(safe-area-inset-bottom) + 4.6rem); z-index: 80;
+  width: 3rem; height: 3rem; padding: 0; border-radius: 50%;
+  border: 1px solid var(--linea); background: rgba(11, 22, 51, 0.8); color: var(--plata);
+  display: grid; place-items: center;
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+.compartir svg { width: 2rem; height: 2rem; overflow: visible; }
+.compartir svg * { transform-box: view-box; transform-origin: 24px 24px; }
+.c-share { stroke: var(--plata); stroke-width: 2; fill: none; }
+.c-share circle { fill: var(--medianoche); }
+.c-petalo { fill: var(--zafiro); stroke: var(--plata); stroke-width: 0.7; transform: rotate(var(--r)) scale(0); }
+.c-interno { fill: var(--zafiro-vivo); }
+.c-centro { fill: none; stroke: var(--estrella); stroke-width: 1.3; opacity: 0; }
+.c-hoja { fill: var(--zafiro-hondo); stroke: var(--plata-suave); stroke-width: 0.8; transform: scale(0); }
+.compartir-texto {
+  position: absolute; right: calc(100% + 0.6rem); top: 50%; translate: 0.5rem -50%;
+  padding: 0.35rem 0.8rem; border-radius: 999px; background: var(--plata); color: var(--noche);
+  font-size: 0.78rem; letter-spacing: 0.08em; white-space: nowrap; opacity: 0; pointer-events: none;
+  transition: opacity 0.4s, translate 0.4s;
+}
+.compartir.entra { animation: c-aparece 0.6s cubic-bezier(.2,1.4,.4,1) both; }
+.compartir.entra .c-share { animation: c-gira-sale 0.7s cubic-bezier(.6,0,.4,1) 0.9s forwards; }
+.compartir.entra .c-petalo { animation: c-florece 0.9s cubic-bezier(.2,1.1,.3,1) calc(1.3s + var(--k) * 70ms) forwards; }
+.compartir.entra .c-hoja { animation: c-hoja 0.6s ease 1.9s forwards; }
+.compartir.entra .c-centro { animation: c-centro 0.6s ease 2s forwards; }
+.compartir.entra .compartir-texto { animation: c-texto 3.2s ease 2.4s both; }
+.compartir.brilla svg { animation: c-brillo 1.2s ease; }
+@keyframes c-aparece { from { transform: scale(0) rotate(-90deg); opacity: 0; } }
+@keyframes c-gira-sale { to { transform: rotate(200deg) scale(0.1); opacity: 0; } }
+@keyframes c-florece { from { transform: rotate(calc(var(--r) - 80deg)) scale(0); } to { transform: rotate(var(--r)) scale(var(--s, 1)); } }
+@keyframes c-hoja { to { transform: scale(1); } }
+@keyframes c-centro { to { opacity: 1; } }
+@keyframes c-texto { 0%, 100% { opacity: 0; translate: 0.5rem -50%; } 12%, 85% { opacity: 1; translate: 0 -50%; } }
+@keyframes c-brillo { 40% { transform: rotate(18deg) scale(1.12); } }
+@media (prefers-reduced-motion: reduce) {
+  .compartir.entra, .compartir.entra * { animation-duration: 1ms !important; animation-delay: 0s !important; }
+  .compartir.entra .compartir-texto { animation: none; }
+}
+
 /* ============ Música y aviso ============ */
 .musica { position: fixed; right: 1rem; bottom: calc(env(safe-area-inset-bottom) + 1rem); z-index: 80; width: 3rem; height: 3rem; border-radius: 50%; border: 1px solid var(--linea); background: rgba(11, 22, 51, 0.8); color: var(--plata); display: grid; place-items: center; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
 .musica[hidden] { display: none; }
@@ -337,8 +390,18 @@ legend { font-size: 0.85rem; letter-spacing: 0.1em; color: var(--plata); margin-
 .aviso.visible { opacity: 1; translate: -50% 0; }
 
 /* ============ Aparición al hacer scroll ============ */
-.revelar { opacity: 0; transform: translate3d(0, 18px, 0); transition: opacity 0.9s ease, transform 0.9s cubic-bezier(.2,.7,.2,1); }
+/* El texto entra desde el lado contrario a la rosa; en secciones centrales, desde abajo.
+   --i (lo pone app.js) escalona los elementos de una misma sección. */
+.revelar {
+  opacity: 0; transform: translate3d(var(--rx, 0), var(--ry, 34px), 0);
+  transition: opacity 1.1s ease, transform 1.2s cubic-bezier(.16,.84,.3,1);
+  transition-delay: calc(var(--i, 0) * 110ms);
+}
+[data-rosa="izq"] { --rx: 56px; --ry: 0px; }
+[data-rosa="der"] { --rx: -56px; --ry: 0px; }
 .revelar.visto { opacity: 1; transform: none; }
+.nombre-script.revelar { transform: translate3d(var(--rx, 0), var(--ry, 34px), 0) scale(0.94); }
+.nombre-script.revelar.visto { transform: none; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
@@ -352,4 +415,9 @@ legend { font-size: 0.85rem; letter-spacing: 0.1em; color: var(--plata); margin-
 @media (min-width: 900px) {
   .portada-escena { padding-top: 3rem; }
   .rosa-slot { width: min(100%, 44rem); }
+  /* el contenido ocupa la mitad libre; la rosa, la otra */
+  [data-rosa="izq"] { margin-left: 50vw; margin-right: auto; width: min(36rem, 44vw); }
+  [data-rosa="der"] { margin-right: 50vw; margin-left: auto; width: min(36rem, 44vw); }
+  [data-rosa="izq"], [data-rosa="der"] { max-width: none; }
+  .marco img { width: min(13vw, 13rem); }
 }

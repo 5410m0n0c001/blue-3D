@@ -1,3 +1,9 @@
+// Siempre empezar desde el principio al abrir o recargar (no restaurar la posición anterior)
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+scrollTo(0, 0);
+addEventListener('load', () => scrollTo(0, 0));
+addEventListener('pageshow', (e) => { if (e.persisted) location.reload(); }); // volver con "atrás" también reinicia
+
 (() => {
   const cfg = window.INVITACION;
   const $ = (s, el = document) => el.querySelector(s);
@@ -18,6 +24,7 @@
   const sobre = $('#sobre');
   const audio = $('#audio');
   const btnMusica = $('#musica');
+  const btnCompartir = $('#compartir');
 
   function abrirSobre() {
     if (sobre.classList.contains('abriendo')) return;
@@ -26,6 +33,8 @@
     if (location.search.includes('debug')) btnMusica.classList.add('pausada'); // pruebas: sin sonido
     else audio.play().catch(() => btnMusica.classList.add('pausada'));
     btnMusica.hidden = false;
+    btnCompartir.hidden = false;
+    requestAnimationFrame(() => btnCompartir.classList.add('entra'));
     setTimeout(() => sobre.remove(), 2400);
   }
   // el sello es el botón accesible; tocar cualquier parte del sobre también abre
@@ -62,6 +71,8 @@
     });
   }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
   $$('.revelar').forEach((el) => obs.observe(el));
+  // escalonar: cada elemento que aparece dentro de una misma sección entra un poco después
+  $$('main > section').forEach((sec) => $$('.revelar', sec).forEach((el, i) => el.style.setProperty('--i', Math.min(i, 6))));
 
   // ---------- Cuenta regresiva ----------
   const objetivo = new Date(cfg.fechaEvento).getTime();
@@ -124,6 +135,26 @@
     try { await navigator.clipboard.writeText(texto); window.avisar('Cuenta copiada'); }
     catch { window.avisar(texto); }
   }));
+
+  // ---------- Compartir invitación ----------
+  btnCompartir.addEventListener('click', async () => {
+    const datos = {
+      title: document.title,
+      text: 'Te invito a celebrar mis XV años. ¡Una Noche de Zafiro!',
+      url: location.origin + location.pathname,
+    };
+    if (navigator.share) {
+      try { await navigator.share(datos); } catch (err) { if (err.name !== 'AbortError') console.warn(err); }
+    } else {
+      try { await navigator.clipboard.writeText(datos.url); window.avisar('Enlace copiado, ¡compártelo!'); }
+      catch { window.avisar(datos.url); }
+    }
+  });
+  // un destello suave de vez en cuando para recordar que existe
+  setInterval(() => {
+    if (btnCompartir.hidden) return;
+    btnCompartir.classList.remove('brilla'); void btnCompartir.offsetWidth; btnCompartir.classList.add('brilla');
+  }, 14000);
 
   // ---------- WhatsApp: buzón y confirmación ----------
   const abrirWhatsApp = (texto) => {

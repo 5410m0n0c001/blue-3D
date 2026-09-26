@@ -65,6 +65,17 @@
     <div class="cielo-plano cielo-cerca"></div>
   </div>
 
+  <!-- Capa fija de la rosa 3D: viaja con el scroll detrás del contenido -->
+  <div class="rosa-escena" id="rosa-escena" aria-hidden="true"></div>
+
+  <!-- Marco de rosas plateadas (adaptado del original) -->
+  <div class="marco" aria-hidden="true">
+    <img class="marco-si" src="img/marco-si.webp" alt="">
+    <img class="marco-sd" src="img/marco-sd.webp" alt="">
+    <img class="marco-ii" src="img/marco-ii.webp" alt="">
+    <img class="marco-id" src="img/marco-id.webp" alt="">
+  </div>
+
   <!-- SOBRE -->
   <div class="sobre" id="sobre" role="dialog" aria-label="Invitación cerrada">
     <div class="sobre-cuerpo">
@@ -94,7 +105,7 @@
     </section>
 
     <!-- RETRATO -->
-    <section class="retrato">
+    <section class="retrato" data-rosa="izq">
       <figure class="retrato-foto">
         <img src="img/quinceanera-1.jpg" alt="Alison con vestido azul y estrellas en el cabello" width="656" height="1500" loading="lazy">
       </figure>
@@ -102,13 +113,13 @@
     </section>
 
     <!-- NOMBRE E INVITACIÓN -->
-    <section class="invitacion bloque">
+    <section class="invitacion bloque" data-rosa="der">
       <h2 class="nombre-completo revelar"><span class="nombre-script">Alison</span><span class="apellidos">Galván Méndez</span></h2>
       <p class="cita revelar">Porque este día es muy importante para mí, quiero compartirlo con las personas que llevo en mi corazón. Tú eres una de ellas. Me encantaría que estuvieras presente en uno de los días más inolvidables de mi vida.</p>
     </section>
 
     <!-- FAMILIA -->
-    <section class="familia bloque">
+    <section class="familia bloque" data-rosa="izq">
       <svg class="tiara revelar" viewBox="0 0 160 40" aria-hidden="true">
         <path d="M10 34 C40 30 50 14 80 6 C110 14 120 30 150 34" />
         <path d="M30 31 L36 20 M55 22 L60 11 M105 22 L100 11 M130 31 L124 20" />
@@ -129,14 +140,14 @@
     </section>
 
     <!-- FOTO EN ARCO -->
-    <section class="arco-wrap">
+    <section class="arco-wrap" data-rosa="der">
       <figure class="arco revelar">
         <img src="img/quinceanera-2.jpg" alt="Alison con tiara de zafiros" width="1086" height="1448" loading="lazy">
       </figure>
     </section>
 
     <!-- FECHA -->
-    <section class="fecha bloque" id="fecha">
+    <section class="fecha bloque" id="fecha" data-rosa="izq">
       <p class="fecha-sup revelar">Celebremos juntos el</p>
       <div class="fecha-grid revelar">
         <span class="fecha-dia-semana">Sábado</span>
@@ -153,7 +164,7 @@
     </section>
 
     <!-- LUGARES -->
-    <section class="lugares bloque">
+    <section class="lugares bloque" data-rosa="der">
       <h2 class="titulo revelar">Dónde</h2>
       <article class="lugar revelar">
         <p class="lugar-tipo">Ceremonia religiosa</p>
@@ -172,7 +183,7 @@
     </section>
 
     <!-- PROGRAMA -->
-    <section class="programa bloque">
+    <section class="programa bloque" data-rosa="izq">
       <h2 class="titulo revelar">Programa</h2>
       <ol class="linea">
         <li class="revelar"><svg><use href="#i-iglesia"/></svg><time>12:00</time><span>Misa</span></li>
@@ -186,7 +197,7 @@
     </section>
 
     <!-- REGALOS -->
-    <section class="regalos bloque">
+    <section class="regalos bloque" data-rosa="der">
       <h2 class="titulo revelar">Regalos</h2>
       <p class="regalos-intro revelar">Tu presencia es mi mejor regalo. Si deseas tener un detalle conmigo, aquí tienes algunas opciones.</p>
       <div class="regalos-grid">
@@ -211,7 +222,7 @@
     </section>
 
     <!-- VESTIMENTA -->
-    <section class="vestimenta bloque">
+    <section class="vestimenta bloque" data-rosa="izq">
       <svg class="vestimenta-icono revelar"><use href="#i-vestido"/></svg>
       <h2 class="titulo revelar">Código de vestimenta</h2>
       <p class="vestimenta-tipo revelar">Formal</p>
@@ -219,7 +230,7 @@
     </section>
 
     <!-- GALERÍA -->
-    <section class="galeria bloque">
+    <section class="galeria bloque" data-rosa="der">
       <h2 class="titulo revelar">Galería</h2>
       <div class="mosaico" id="mosaico">
         <button class="m m-alta revelar" type="button" data-full="img/quinceanera-1.jpg"><img src="img/quinceanera-1-sm.jpg" alt="Retrato con estrellas en el cabello" loading="lazy"></button>
@@ -230,7 +241,7 @@
     </section>
 
     <!-- ÁLBUM DE INVITADOS -->
-    <section class="album bloque" id="album">
+    <section class="album bloque" id="album" data-rosa="izq">
       <h2 class="titulo revelar">Álbum de la noche</h2>
       <p class="album-intro revelar">El día del evento, sube aquí tus fotos. Todos las verán al instante.</p>
       <input type="file" id="album-input" accept="image/*" multiple hidden>
@@ -242,7 +253,7 @@
     </section>
 
     <!-- BUZÓN DE DESEOS -->
-    <section class="deseos bloque">
+    <section class="deseos bloque" data-rosa="der">
       <h2 class="titulo revelar">Buzón de deseos</h2>
       <p class="revelar">Déjame un mensaje por mis XV años. Lo recibiré con mucho cariño.</p>
       <form id="form-deseos" class="revelar">
@@ -253,7 +264,7 @@
     </section>
 
     <!-- CONFIRMACIÓN: la rosa vuelve, cerrada -->
-    <section class="confirmar" id="confirmar">
+    <section class="confirmar" id="confirmar" data-rosa="cierre">
       <div class="rosa-slot rosa-slot-cierre" data-rosa-slot="cierre">
         <img class="rosa-respaldo" src="img/rosa-cerrada.webp" alt="" width="700" height="700" loading="lazy">
       </div>
@@ -273,7 +284,7 @@
     </section>
 
     <!-- DESPEDIDA -->
-    <section class="despedida">
+    <section class="despedida" data-rosa="final">
       <p class="despedida-texto revelar">Te espero</p>
       <p class="nombre-script revelar">Alison</p>
       <p class="credito">Invitación digital por INIT IDEA</p>
@@ -287,6 +298,31 @@
     <img class="visor-img" alt="">
     <button class="visor-sig" type="button" aria-label="Siguiente">›</button>
   </div>
+
+  <!-- Compartir: aparece como ícono de compartir y se transforma en rosa -->
+  <button class="compartir" id="compartir" type="button" aria-label="Compartir invitación" hidden>
+    <svg viewBox="0 0 48 48" aria-hidden="true">
+      <g class="c-share">
+        <path d="M30 15.5 18 22.5M18 25.5 30 32.5"/>
+        <circle cx="32.5" cy="14" r="4"/><circle cx="15.5" cy="24" r="4"/><circle cx="32.5" cy="34" r="4"/>
+      </g>
+      <g class="c-rosa">
+        <path class="c-hoja" d="M26 33c5 4 10 4 12 2-2-4-7-5-12-2z"/>
+        <path class="c-petalo" style="--r:0deg;--k:0" d="M24 24C18 22 15.5 15 19 11.5 21 9.5 27 9.5 29 11.5 32.5 15 30 22 24 24z"/>
+        <path class="c-petalo" style="--r:72deg;--k:1" d="M24 24C18 22 15.5 15 19 11.5 21 9.5 27 9.5 29 11.5 32.5 15 30 22 24 24z"/>
+        <path class="c-petalo" style="--r:144deg;--k:2" d="M24 24C18 22 15.5 15 19 11.5 21 9.5 27 9.5 29 11.5 32.5 15 30 22 24 24z"/>
+        <path class="c-petalo" style="--r:216deg;--k:3" d="M24 24C18 22 15.5 15 19 11.5 21 9.5 27 9.5 29 11.5 32.5 15 30 22 24 24z"/>
+        <path class="c-petalo" style="--r:288deg;--k:4" d="M24 24C18 22 15.5 15 19 11.5 21 9.5 27 9.5 29 11.5 32.5 15 30 22 24 24z"/>
+        <path class="c-petalo c-interno" style="--r:36deg;--k:5;--s:.6" d="M24 24C18 22 15.5 15 19 11.5 21 9.5 27 9.5 29 11.5 32.5 15 30 22 24 24z"/>
+        <path class="c-petalo c-interno" style="--r:108deg;--k:6;--s:.6" d="M24 24C18 22 15.5 15 19 11.5 21 9.5 27 9.5 29 11.5 32.5 15 30 22 24 24z"/>
+        <path class="c-petalo c-interno" style="--r:180deg;--k:7;--s:.6" d="M24 24C18 22 15.5 15 19 11.5 21 9.5 27 9.5 29 11.5 32.5 15 30 22 24 24z"/>
+        <path class="c-petalo c-interno" style="--r:252deg;--k:8;--s:.6" d="M24 24C18 22 15.5 15 19 11.5 21 9.5 27 9.5 29 11.5 32.5 15 30 22 24 24z"/>
+        <path class="c-petalo c-interno" style="--r:324deg;--k:9;--s:.6" d="M24 24C18 22 15.5 15 19 11.5 21 9.5 27 9.5 29 11.5 32.5 15 30 22 24 24z"/>
+        <path class="c-centro" d="M24 21.2a2.8 2.8 0 1 1-2.8 2.8 4.6 4.6 0 0 1 4.6-4.6 6.4 6.4 0 0 1 6.4 6.4"/>
+      </g>
+    </svg>
+    <span class="compartir-texto">Compartir</span>
+  </button>
 
   <!-- Música -->
   <button class="musica" id="musica" type="button" aria-label="Pausar música" hidden>

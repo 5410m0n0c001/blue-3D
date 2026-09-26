@@ -1,7 +1,11 @@
-// Rosa de zafiro en 3D. Un solo canvas WebGL que se mueve entre dos lugares:
-//  - portada: la rosa se abre con el scroll (morph "Abierta")
-//  - cierre:  la rosa vuelve cerrada junto a la confirmación
-// Si no hay WebGL o falla la carga, se quedan las imágenes de respaldo.
+// Rosa de zafiro en 3D que acompaña todo el scroll.
+//  - Portada: se abre pétalo por pétalo con el scroll (morph "Abierta").
+//  - Después viaja entre secciones según su data-rosa:
+//      izq / der  → en escritorio se coloca de ese lado y el contenido ocupa el otro;
+//                   en celular queda detrás del texto, tenue.
+//      cierre     → se cierra y se posa en el hueco sobre la confirmación.
+//      final      → pequeña y entreabierta en la despedida.
+// Un solo canvas fijo detrás del contenido. Sin WebGL quedan las imágenes de respaldo.
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
@@ -9,15 +13,34 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 const reducir = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const gamaBaja = (navigator.hardwareConcurrency || 4) <= 4 && (navigator.deviceMemory || 4) <= 4;
-const slots = {
-  portada: document.querySelector('[data-rosa-slot="portada"]'),
-  cierre: document.querySelector('[data-rosa-slot="cierre"]'),
-};
+const escritorio = matchMedia('(min-width: 900px)');
+const capa = document.getElementById('rosa-escena');
 const portada = document.getElementById('portada');
+const slotCierre = document.querySelector('[data-rosa-slot="cierre"]');
+const secciones = [...document.querySelectorAll('[data-rosa]')];
 
-const clamp01 = (v) => Math.min(1, Math.max(0, v));
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const clamp01 = (v) => clamp(v, 0, 1);
 const suave = (a, b, v) => { const t = clamp01((v - a) / (b - a)); return t * t * (3 - 2 * t); };
 const lerp = (a, b, t) => a + (b - a) * t;
+
+// Pose de la rosa por tipo de sección. x, y en fracción de media pantalla; s escala;
+// a apertura (0 capullo, 1 abierta); o opacidad de la capa.
+function pose(tipo, el) {
+  const pc = escritorio.matches;
+  switch (tipo) {
+    case 'izq': return pc ? { x: -0.52, y: 0, s: 0.72, a: 1, o: 1 } : { x: -0.18, y: 0.05, s: 0.95, a: 1, o: 0.28 };
+    case 'der': return pc ? { x: 0.52, y: 0, s: 0.72, a: 1, o: 1 } : { x: 0.18, y: 0.05, s: 0.95, a: 1, o: 0.28 };
+    case 'cierre': {
+      // se posa sobre el hueco de la confirmación
+      const r = slotCierre.getBoundingClientRect();
+      const y = clamp(1 - (r.top + r.height * 0.55) / (innerHeight / 2), -0.8, 0.8);
+      return { x: 0, y, s: pc ? 0.42 : 0.5, a: 0.06, o: 1 };
+    }
+    case 'final': return { x: 0, y: 0.38, s: pc ? 0.38 : 0.45, a: 0.45, o: pc ? 0.9 : 0.55 };
+    default: return { x: 0, y: 0.04, s: 1, a: 1, o: 1 }; // fin de la portada
+  }
+}
 
 function hayWebGL() {
   try { return !!document.createElement('canvas').getContext('webgl2'); } catch { return false; }
@@ -67,18 +90,18 @@ async function iniciar() {
   });
   if (!petalos) throw new Error('rosa.glb sin morph target');
 
-  // ----- destellos alrededor de la flor
+  // ----- destellos alrededor de la flor (viajan con ella)
   const N = gamaBaja ? 55 : 110;
-  const pos = new Float32Array(N * 3), fase = new Float32Array(N), tam = new Float32Array(N);
+  const pos = new Float32Array(N * 3), fase = new Float32Array(N), tamanos = new Float32Array(N);
   for (let i = 0; i < N; i++) {
     const r = 0.9 + Math.random() * 1.5, th = Math.random() * Math.PI * 2, y = (Math.random() - 0.35) * 2.2;
     pos.set([Math.cos(th) * r, y, Math.sin(th) * r], i * 3);
-    fase[i] = Math.random() * 6.28; tam[i] = 0.5 + Math.random() * 1.3;
+    fase[i] = Math.random() * 6.28; tamanos[i] = 0.5 + Math.random() * 1.3;
   }
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   geo.setAttribute('aFase', new THREE.BufferAttribute(fase, 1));
-  geo.setAttribute('aTam', new THREE.BufferAttribute(tam, 1));
+  geo.setAttribute('aTam', new THREE.BufferAttribute(tamanos, 1));
   const matDestello = new THREE.ShaderMaterial({
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
     uniforms: { uT: { value: 0 }, uPR: { value: pr }, uBrillo: { value: 0.3 } },
@@ -105,46 +128,46 @@ async function iniciar() {
       }`,
   });
   const destellos = new THREE.Points(geo, matDestello);
-  scene.add(destellos);
+  const ancla = new THREE.Group(); // mueve rosa + destellos juntos por la pantalla
+  ancla.add(rosa, destellos);
+  scene.add(ancla);
 
   // ----- encuadre: esfera (centro, radio) vista desde una dirección
   const dir = new THREE.Vector3(), objetivo = new THREE.Vector3();
+  const derecha = new THREE.Vector3(), arriba = new THREE.Vector3();
+  let mediaAlto = 1, mediaAncho = 1; // media pantalla en unidades del mundo, en el plano del objetivo
   function encuadrar(cx, cy, radio, dy) {
-    const aspecto = camera.aspect;
     const vfov = THREE.MathUtils.degToRad(camera.fov);
-    const hfov = 2 * Math.atan(Math.tan(vfov / 2) * aspecto);
+    const hfov = 2 * Math.atan(Math.tan(vfov / 2) * camera.aspect);
     const dist = radio / Math.sin(Math.min(vfov, hfov) / 2);
     dir.set(0, dy, 1).normalize();
     objetivo.set(cx, cy, 0);
     camera.position.copy(objetivo).addScaledVector(dir, dist);
     camera.lookAt(objetivo);
+    camera.updateMatrixWorld();
+    mediaAlto = dist * Math.tan(vfov / 2);
+    mediaAncho = mediaAlto * camera.aspect;
+    derecha.setFromMatrixColumn(camera.matrixWorld, 0);
+    arriba.setFromMatrixColumn(camera.matrixWorld, 1);
+  }
+  const holgura = () => (camera.aspect > 0.8 ? 1.22 : 1); // en pantallas anchas manda la altura
+  function encuadrePortada(p) {
+    const e = suave(0, 0.85, p);
+    encuadrar(0, lerp(-0.62, 0.12, e), lerp(1.3 * holgura(), 1.0, e), lerp(0.22, 1.05, e));
   }
 
   // ----- estado
-  let modo = 'portada', slotActivo = null;
-  let pObjetivo = reducir ? 1 : 0, p = pObjetivo, pForzado = null;
+  const actual = { x: 0, y: 0, s: 1, a: 0, o: 1 };
+  let forzado = null; // {modo, p} para capturas de respaldo
   let inclX = 0, inclY = 0, inclXObj = 0, inclYObj = 0;
-  const visibles = new Set();
   const reloj = new THREE.Clock();
-  let t = 0;
+  let t = 0, ultimoScroll = 0, cuadro = 0;
+  addEventListener('scroll', () => { ultimoScroll = performance.now(); }, { passive: true });
 
-  function tamCanvas() {
-    if (!slotActivo) return;
-    const { width, height } = slotActivo.getBoundingClientRect();
-    if (!width || !height) return;
-    renderer.setSize(width, height, false);
-    camera.aspect = width / height;
+  function tam() {
+    renderer.setSize(innerWidth, innerHeight, false);
+    camera.aspect = innerWidth / innerHeight;
     camera.updateProjectionMatrix();
-  }
-
-  function moverA(nombre) {
-    if (slotActivo === slots[nombre]) return;
-    modo = nombre;
-    slotActivo = slots[nombre];
-    slotActivo.appendChild(renderer.domElement);
-    slotActivo.classList.add('rosa-lista');
-    tamCanvas();
-    dibujar(0);
   }
 
   function progresoPortada() {
@@ -153,33 +176,69 @@ async function iniciar() {
     return recorrido > 0 ? clamp01(-r.top / recorrido) : 1;
   }
 
+  // pose objetivo según qué sección está al centro de la pantalla
+  function poseScroll() {
+    const rp = portada.getBoundingClientRect();
+    if (rp.bottom >= innerHeight) return null; // seguimos en la portada
+    const centro = innerHeight / 2;
+    // ancla virtual: fin de la portada
+    let prevC = rp.bottom - innerHeight, prevP = pose('portada');
+    for (const sec of secciones) {
+      const r = sec.getBoundingClientRect();
+      const c = r.top + r.height / 2 - centro;
+      const p = pose(sec.dataset.rosa, sec);
+      if (c > 0) {
+        let k = clamp01((0 - prevC) / (c - prevC));
+        k = reducir ? (k < 0.5 ? 0 : 1) : suave(0.18, 0.82, k); // descansa y luego viaja
+        return mezclar(prevP, p, k);
+      }
+      prevC = c; prevP = p;
+    }
+    return prevP;
+  }
+  const mezclar = (a, b, k) => ({ x: lerp(a.x, b.x, k), y: lerp(a.y, b.y, k), s: lerp(a.s, b.s, k), a: lerp(a.a, b.a, k), o: lerp(a.o, b.o, k) });
+
   function dibujar(dt) {
     t += dt;
-    let apertura, giro;
-    if (modo === 'portada') {
-      if (pForzado !== null) pObjetivo = pForzado;
-      else if (!reducir) pObjetivo = progresoPortada();
-      p += (pObjetivo - p) * (1 - Math.exp(-dt * 7));
-      if (dt === 0) p = pObjetivo;
-      portada.style.setProperty('--p', p.toFixed(4));
-      apertura = suave(0.04, 0.72, p);
-      const e = suave(0, 0.85, p);
-      const holgura = camera.aspect > 0.8 ? 1.22 : 1; // en pantallas anchas manda la altura
-      encuadrar(0, lerp(-0.62, 0.12, e), lerp(1.3 * holgura, 1.0, e), lerp(0.22, 1.05, e));
-      giro = p * 1.9 + (reducir ? 0 : t * 0.12);
-      matDestello.uniforms.uBrillo.value = lerp(0.25, 1, apertura);
-    } else {
-      apertura = reducir ? 0.05 : 0.06 + 0.05 * Math.sin(t * 1.1);
+    const suavizado = dt === 0 ? 1 : 1 - Math.exp(-dt * 6);
+    let giro, destino;
+
+    if (forzado?.modo === 'cierre') {
       encuadrar(0, -0.45, 1.2, 0.3);
-      giro = reducir ? 0.6 : t * 0.25;
-      matDestello.uniforms.uBrillo.value = 0.55;
+      destino = { x: 0, y: 0, s: 1, a: 0.06, o: 1 };
+      giro = 0.6;
+    } else {
+      const pPortada = forzado ? forzado.p : (reducir ? 1 : progresoPortada());
+      const enScroll = forzado ? null : poseScroll();
+      encuadrePortada(enScroll ? 1 : pPortada);
+      if (!enScroll) {
+        portada.style.setProperty('--p', pPortada.toFixed(4));
+        destino = { x: 0, y: 0.04, s: 1, a: suave(0.04, 0.72, pPortada), o: 1 };
+        giro = pPortada * 1.9;
+      } else {
+        portada.style.setProperty('--p', '1');
+        destino = enScroll;
+        giro = 1.9 + (scrollY - (portada.offsetHeight - innerHeight)) * 0.0014;
+      }
+      if (!reducir) giro += t * 0.12;
     }
+
+    for (const k in destino) actual[k] += (destino[k] - actual[k]) * (forzado ? 1 : suavizado);
+    if (reducir && !forzado) Object.assign(actual, destino);
+
     inclX += (inclXObj - inclX) * (1 - Math.exp(-dt * 4));
     inclY += (inclYObj - inclY) * (1 - Math.exp(-dt * 4));
-    petalos.morphTargetInfluences[0] = apertura;
+    const a = reducir || forzado ? actual.a : actual.a * (0.97 + 0.03 * Math.sin(t * 1.3)); // respira
+    petalos.morphTargetInfluences[0] = a;
     rosa.rotation.set(inclX, giro + inclY, 0);
-    destellos.rotation.y = -t * 0.05 + giro * 0.3;
+    ancla.position.set(0, 0, 0)
+      .addScaledVector(derecha, actual.x * mediaAncho)
+      .addScaledVector(arriba, actual.y * mediaAlto);
+    ancla.scale.setScalar(actual.s);
+    destellos.rotation.y = -t * 0.05;
+    matDestello.uniforms.uBrillo.value = lerp(0.25, 1, a) * clamp01(actual.o * 1.4);
     matDestello.uniforms.uT.value = t;
+    capa.style.opacity = forzado ? 1 : actual.o.toFixed(3);
     renderer.render(scene, camera);
   }
 
@@ -190,7 +249,7 @@ async function iniciar() {
     acumulado += dt; muestras++;
     if (muestras === 90) {
       if (acumulado / muestras > 1 / 40) {
-        pr = 1; renderer.setPixelRatio(pr); matDestello.uniforms.uPR.value = pr; tamCanvas(); bajado = true;
+        pr = 1; renderer.setPixelRatio(pr); matDestello.uniforms.uPR.value = pr; tam(); bajado = true;
       }
       muestras = 0; acumulado = 0;
     }
@@ -199,22 +258,19 @@ async function iniciar() {
   function bucle() {
     requestAnimationFrame(bucle);
     const dt = Math.min(reloj.getDelta(), 0.1);
-    if (!visibles.size || document.hidden || reducir) return;
-    dibujar(dt);
-    medir(dt);
+    if (document.hidden) return;
+    if (reducir) { if (performance.now() - ultimoScroll < 200) dibujar(0); return; }
+    // sin scroll reciente basta con 30 fps (ahorra batería)
+    cuadro++;
+    const quieto = performance.now() - ultimoScroll > 800;
+    if (quieto && cuadro % 2) return;
+    dibujar(quieto ? dt * 2 : dt);
+    medir(quieto ? dt * 2 : dt);
   }
 
-  const io = new IntersectionObserver((entradas) => {
-    entradas.forEach((e) => {
-      const nombre = e.target.dataset.rosaSlot;
-      if (e.isIntersecting) visibles.add(nombre); else visibles.delete(nombre);
-    });
-    if (visibles.has('cierre')) moverA('cierre');
-    else if (visibles.has('portada')) moverA('portada');
-  }, { rootMargin: '10% 0px' });
-  Object.values(slots).forEach((s) => io.observe(s));
-
-  addEventListener('resize', () => { tamCanvas(); if (reducir) dibujar(0); });
+  capa.appendChild(renderer.domElement);
+  tam();
+  addEventListener('resize', () => { tam(); dibujar(0); });
   if (!reducir) {
     addEventListener('pointermove', (e) => {
       if (e.pointerType !== 'mouse') return;
@@ -222,17 +278,18 @@ async function iniciar() {
       inclXObj = (e.clientY / innerHeight - 0.5) * 0.25;
     }, { passive: true });
   }
-  moverA('portada');
+  document.body.classList.add('rosa-3d');
+  dibujar(0);
   bucle();
 
   // gancho de depuración / captura de imágenes de respaldo: ?debug
   if (location.search.includes('debug')) {
     window.__rosa = {
-      capturar(nombreModo, progreso) {
-        modo = nombreModo; pForzado = progreso;
+      capturar(modo, p) {
+        forzado = { modo, p };
         dibujar(0);
         const png = renderer.domElement.toDataURL('image/png');
-        pForzado = null;
+        forzado = null;
         return png;
       },
       renderer,
