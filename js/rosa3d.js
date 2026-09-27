@@ -59,7 +59,8 @@ async function iniciar() {
   if (!hayWebGL()) return;
 
   const renderer = new THREE.WebGLRenderer({ antialias: devicePixelRatio < 2, alpha: true, powerPreference: 'high-performance' });
-  let pr = Math.min(devicePixelRatio, gamaBaja ? 1.25 : 2);
+  // en celular basta 1.5x: se ve nítida y usa ~45 % menos memoria gráfica que 2x
+  let pr = Math.min(devicePixelRatio, gamaBaja ? 1.25 : (innerWidth < 900 ? 1.5 : 2));
   renderer.setPixelRatio(pr);
   renderer.toneMapping = THREE.AgXToneMapping;
   renderer.toneMappingExposure = 0.9;
@@ -267,7 +268,7 @@ async function iniciar() {
   function bucle() {
     requestAnimationFrame(bucle);
     const dt = Math.min(reloj.getDelta(), 0.1);
-    if (document.hidden) return;
+    if (document.hidden || pausada) return;
     if (reducir) { if (performance.now() - ultimoScroll < 200) dibujar(0); return; }
     // sin scroll reciente basta con 30 fps (ahorra batería)
     cuadro++;
@@ -287,6 +288,23 @@ async function iniciar() {
       inclXObj = (e.clientY / innerHeight - 0.5) * 0.25;
     }, { passive: true });
   }
+  // Antes de abrir la cámara se libera la memoria gráfica (evita que el celular cierre la pestaña)
+  let pausada = false;
+  window.__rosa3d = {
+    pausar() {
+      if (pausada) return;
+      pausada = true;
+      capa.style.visibility = 'hidden';
+      renderer.setSize(1, 1, false); // suelta el framebuffer grande
+    },
+    reanudar() {
+      if (!pausada) return;
+      pausada = false;
+      capa.style.visibility = '';
+      tam();
+      dibujar(0);
+    },
+  };
   document.body.classList.add('rosa-3d');
   dibujar(0);
   bucle();

@@ -53,6 +53,8 @@
   // ---------- Compresión ----------
   async function decodificar(file) {
     if ('createImageBitmap' in window) {
+      // decodifica ya reducida: una foto de 48 MP a tamaño completo ocupa ~200 MB de memoria
+      try { return await createImageBitmap(file, { imageOrientation: 'from-image', resizeWidth: cfg.maxLado, resizeQuality: 'high' }); } catch { /* sigue */ }
       try { return await createImageBitmap(file, { imageOrientation: 'from-image' }); } catch { /* sigue */ }
     }
     const url = URL.createObjectURL(file);
@@ -105,9 +107,33 @@
   }
 
   btnSubir.addEventListener('click', () => input.click());
-  btnCamara.addEventListener('click', () => camara.click()); // abre la app de cámara del celular
+  // Abrir la cámara: primero libera memoria (rosa 3D y música) y deja una marca por si el
+  // sistema cierra la pestaña mientras la cámara está abierta (pasa en Android con poca RAM).
+  let camaraAbierta = false;
+  window.prepararCamara = () => {
+    camaraAbierta = true;
+    try { sessionStorage.setItem('camara-pendiente', String(Date.now())); } catch { /* modo privado */ }
+    const musica = document.getElementById('audio');
+    if (!musica.paused) { musica.pause(); document.getElementById('musica').classList.add('pausada'); }
+    window.__rosa3d?.pausar();
+  };
+  function terminarCamara() {
+    camaraAbierta = false;
+    try { sessionStorage.removeItem('camara-pendiente'); } catch { /* modo privado */ }
+    window.__rosa3d?.reanudar();
+  }
+  // si cancelan la cámara no hay evento change: al volver a la página se restaura todo
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && camaraAbierta) setTimeout(() => { if (camaraAbierta && !camara.files.length) terminarCamara(); }, 1500);
+  });
+  btnCamara.addEventListener('click', () => { window.prepararCamara(); camara.click(); }); // abre la app de cámara
   input.addEventListener('change', () => procesar(input));
-  camara.addEventListener('change', () => procesar(camara));
+  camara.addEventListener('change', async () => { camaraAbierta = false; await procesar(camara); terminarCamara(); });
+
+  // Volvimos de una recarga forzada por falta de memoria: explicar y ofrecer la galería
+  if (window.__volvioDeCamara) {
+    mostrarEstado('Tu celular cerró la invitación al abrir la cámara (poca memoria). Toma la foto con la cámara normal del celular y súbela con «Elegir de galería».', true);
+  }
 
   async function procesar(origen) {
     const total = origen.files.length;

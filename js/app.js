@@ -3,6 +3,14 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 scrollTo(0, 0);
 // solo mientras el sobre sigue cerrado: si ya entraron (p. ej. al álbum desde el QR), no los regresa
 addEventListener('load', () => { if (document.getElementById('sobre')) scrollTo(0, 0); });
+// ¿El celular cerró la pestaña mientras la cámara estaba abierta? (marca de menos de 10 min)
+window.__volvioDeCamara = (() => {
+  try {
+    const t = +sessionStorage.getItem('camara-pendiente');
+    sessionStorage.removeItem('camara-pendiente');
+    return t > 0 && Date.now() - t < 10 * 60 * 1000;
+  } catch { return false; }
+})();
 addEventListener('pageshow', (e) => { if (e.persisted) location.reload(); }); // volver con "atrás" también reinicia
 
 (() => {
@@ -44,17 +52,25 @@ addEventListener('pageshow', (e) => { if (e.persisted) location.reload(); }); //
 
   // ---------- Llegada desde el QR de las mesas: ?action=take-photo ----------
   const llegada = $('#llegada');
-  if (new URLSearchParams(location.search).get('action') === 'take-photo') {
+  // entra directo al álbum, sin sobre ni música
+  function entrarAlAlbum() {
+    llegada.remove();
+    sobre.remove();
+    document.body.classList.remove('sobre-cerrado');
+    btnMusica.hidden = false; btnMusica.classList.add('pausada');
+    btnCompartir.hidden = false; btnCompartir.classList.add('entra');
+    $('#album').scrollIntoView({ behavior: 'instant', block: 'start' });
+  }
+  if (window.__volvioDeCamara) {
+    // el celular recargó la página al abrir la cámara: regresa al álbum, no al sobre
+    entrarAlAlbum();
+    addEventListener('load', () => $('#album').scrollIntoView({ behavior: 'instant', block: 'start' }));
+  } else if (new URLSearchParams(location.search).get('action') === 'take-photo') {
     llegada.hidden = false;
     $('#llegada-camara').addEventListener('click', () => {
-      // entra directo al álbum (sin sobre ni música) y abre la cámara en el mismo toque
-      llegada.remove();
-      sobre.remove();
-      document.body.classList.remove('sobre-cerrado');
-      btnMusica.hidden = false; btnMusica.classList.add('pausada');
-      btnCompartir.hidden = false; btnCompartir.classList.add('entra');
-      $('#album').scrollIntoView({ behavior: 'instant', block: 'start' });
-      $('#album-camara').click();
+      entrarAlAlbum();
+      window.prepararCamara?.();
+      $('#album-camara').click(); // en el mismo toque, para que el navegador lo permita
     });
     $('#llegada-ver').addEventListener('click', () => llegada.remove());
   }
