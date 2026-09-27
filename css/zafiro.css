@@ -280,11 +280,9 @@ body.sobre-cerrado .marco img { opacity: 0; }
 .m:hover img { transform: scale(1.04); }
 .m-alta { grid-row: span 2; }
 .m-alta img { object-position: 50% 10%; }
-.m-rostro img { object-position: 50% 14%; }
-.m-detalle img { object-position: 50% 78%; transform: scale(1.5); transform-origin: 50% 78%; }
-.m-detalle:hover img { transform: scale(1.56); }
-.m-cinturon { grid-column: span 2; }
-.m-cinturon img { object-position: 40% 60%; }
+.m img { object-position: 50% 18%; }
+.m-ancha { grid-column: span 2; }
+.m-ancha img { object-position: 50% 22%; }
 
 /* ============ Álbum ============ */
 .album { text-align: center; }
@@ -299,6 +297,18 @@ body.sobre-cerrado .marco img { opacity: 0; }
 .album-grid img.cargada { opacity: 1; }
 .album-grid button:first-child { grid-column: span 2; grid-row: span 2; }
 .album-vacio { grid-column: 1 / -1; padding: 2rem 1rem; border: 1px dashed var(--linea); border-radius: 16px; color: var(--plata-suave); font-size: 0.95rem; }
+.album-acciones { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.7rem; }
+.album-qr { margin: 2.4rem auto 0; max-width: 18rem; padding: 1.4rem; border: 1px solid var(--linea); border-radius: 20px; background: var(--vidrio); }
+.album-qr-codigo { width: 9.5rem; height: 9.5rem; margin: 0 auto 1rem; padding: 0.6rem; border-radius: 12px; background: var(--estrella); }
+.album-qr-codigo img, .album-qr-codigo canvas { width: 100% !important; height: 100% !important; image-rendering: pixelated; }
+.album-qr p { font-size: 0.88rem; color: var(--plata-suave); }
+
+/* Pantalla de llegada desde el QR */
+.llegada { position: fixed; inset: 0; z-index: 110; display: grid; place-content: center; justify-items: center; gap: 1rem; padding: var(--lado); text-align: center;
+  background: radial-gradient(80% 60% at 50% 40%, rgba(59, 91, 219, 0.25), transparent 70%), var(--medianoche); }
+.llegada[hidden] { display: none; }
+.llegada .nombre-script { font-size: clamp(4rem, 20vw, 6rem); line-height: 1; }
+.llegada-texto { font: italic 300 1.35rem var(--f-display); color: var(--plata); margin-bottom: 1rem; }
 .album-hashtag { display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1.6rem; color: var(--plata); text-decoration: none; letter-spacing: 0.1em; }
 
 /* ============ Deseos ============ */
@@ -409,6 +419,14 @@ legend { font-size: 0.85rem; letter-spacing: 0.1em; color: var(--plata); margin-
   .sello { animation: none; }
   .portada { height: 100svh; }
   .portada-sup, .portada-nombre { opacity: 1; transform: none; }
+}
+
+/* Celular: el texto deja libre el lado por donde se asoma la rosa */
+@media (max-width: 899px) {
+  .portada-escena { padding-bottom: calc(env(safe-area-inset-bottom) + 8.2rem); } /* libre de los botones fijos */
+  [data-rosa="izq"]:not([data-ancho]) { padding-left: calc(var(--lado) + 28vw); }
+  [data-rosa="der"]:not([data-ancho]) { padding-right: calc(var(--lado) + 28vw); }
+  [data-rosa]:not([data-ancho]) .titulo { font-size: clamp(1.9rem, 8vw, 2.4rem); }
 }
 
 @media (min-width: 900px) {

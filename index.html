@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="googlebot" content="notranslate">
   <meta name="theme-color" content="#070F24">
-  <title>Mis XV · Alison</title>
+  <title>Mis XV · Paloma</title>
   <meta name="description" content="Invitación a mis XV años. Noche de Zafiro.">
-  <meta property="og:title" content="Mis XV · Alison">
+  <meta property="og:title" content="Mis XV · Paloma">
   <meta property="og:description" content="Te invito a celebrar conmigo una Noche de Zafiro.">
   <meta property="og:image" content="img/og.jpg">
   <meta property="og:type" content="website">
@@ -31,6 +31,7 @@
   <script defer src="js/app.js"></script>
   <script type="module" src="js/rosa3d.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script defer src="js/album.js"></script>
 </head>
 
@@ -50,6 +51,7 @@
       <symbol id="i-tarjeta" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 9.5h19M6 15h4"/></symbol>
       <symbol id="i-vestido" viewBox="0 0 24 24"><path d="M9 2l1 4-2 5-4 10h16l-4-10-2-5 1-4M10 6h4"/></symbol>
       <symbol id="i-camara" viewBox="0 0 24 24"><path d="M3 8h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="13.5" r="3.8"/></symbol>
+      <symbol id="i-galeria" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></symbol>
       <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
       <symbol id="i-whatsapp" viewBox="0 0 24 24"><path d="M4 20l1.3-4A8.5 8.5 0 1 1 8 18.8z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a4 4 0 0 1-2.3-2.3l.8-1-1-2z"/></symbol>
       <symbol id="i-instagram" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r=".6"/></symbol>
@@ -88,6 +90,14 @@
     </div>
   </div>
 
+  <!-- Llegada desde el QR de las mesas (?action=take-photo) -->
+  <div class="llegada" id="llegada" hidden>
+    <p class="nombre-script">Paloma</p>
+    <p class="llegada-texto">¡Ayúdame a capturar este momento!</p>
+    <button class="boton boton-lleno" type="button" id="llegada-camara"><svg><use href="#i-camara"/></svg>Abrir cámara</button>
+    <button class="boton" type="button" id="llegada-ver">Ver invitación</button>
+  </div>
+
   <main>
     <!-- PORTADA: la rosa se abre con el scroll (momento principal) -->
     <section class="portada" id="portada" aria-label="Portada">
@@ -97,7 +107,7 @@
           <img class="rosa-respaldo" src="img/rosa-abierta.webp" alt="Rosa azul de zafiro" width="700" height="700">
         </div>
         <div class="portada-nombre">
-          <h1 class="nombre-script">Alison</h1>
+          <h1 class="nombre-script">Paloma</h1>
           <p class="portada-lema">Noche de Zafiro</p>
         </div>
         <div class="polvo" aria-hidden="true"></div>
@@ -105,16 +115,16 @@
     </section>
 
     <!-- RETRATO -->
-    <section class="retrato" data-rosa="izq">
+    <section class="retrato" data-rosa="izq" data-ancho>
       <figure class="retrato-foto">
-        <img src="img/quinceanera-1.jpg" alt="Alison con vestido azul y estrellas en el cabello" width="656" height="1500" loading="lazy">
+        <img src="img/quinceanera-1.jpg" alt="Paloma con vestido azul y estrellas en el cabello" width="656" height="1500" loading="lazy">
       </figure>
       <p class="retrato-frase revelar">Hoy comienza un camino que conduce a un mundo nuevo de ilusión, esperanza y sueños.</p>
     </section>
 
     <!-- NOMBRE E INVITACIÓN -->
     <section class="invitacion bloque" data-rosa="der">
-      <h2 class="nombre-completo revelar"><span class="nombre-script">Alison</span><span class="apellidos">Galván Méndez</span></h2>
+      <h2 class="nombre-completo revelar"><span class="nombre-script">Paloma</span><span class="apellidos">Polet González Delgado</span></h2>
       <p class="cita revelar">Porque este día es muy importante para mí, quiero compartirlo con las personas que llevo en mi corazón. Tú eres una de ellas. Me encantaría que estuvieras presente en uno de los días más inolvidables de mi vida.</p>
     </section>
 
@@ -128,31 +138,25 @@
       <p class="familia-intro revelar">Con la bendición de Dios y de</p>
       <div class="familia-grupo revelar">
         <h3>Mis padres</h3>
-        <p>Elías Moisés Galván Juárez</p>
-        <p>Esperanza Méndez Hernández</p>
-      </div>
-      <p class="familia-intro revelar">y la compañía de</p>
-      <div class="familia-grupo revelar">
-        <h3>Mis padrinos</h3>
-        <p>José Feliciano Hernández</p>
-        <p>María Carolina Escandón Cruz</p>
+        <p>Uriel Armando García Rivas</p>
+        <p>Ana Patricia Delgado Librado</p>
       </div>
     </section>
 
     <!-- FOTO EN ARCO -->
-    <section class="arco-wrap" data-rosa="der">
+    <section class="arco-wrap" data-rosa="der" data-ancho>
       <figure class="arco revelar">
-        <img src="img/quinceanera-2.jpg" alt="Alison con tiara de zafiros" width="1086" height="1448" loading="lazy">
+        <img src="img/quinceanera-3.jpg" alt="Paloma con vestido de gala y tiara" width="1070" height="1470" loading="lazy">
       </figure>
     </section>
 
     <!-- FECHA -->
-    <section class="fecha bloque" id="fecha" data-rosa="izq">
+    <section class="fecha bloque" id="fecha" data-rosa="izq" data-ancho>
       <p class="fecha-sup revelar">Celebremos juntos el</p>
       <div class="fecha-grid revelar">
         <span class="fecha-dia-semana">Sábado</span>
-        <span class="fecha-num">12</span>
-        <span class="fecha-mes">Diciembre</span>
+        <span class="fecha-num">28</span>
+        <span class="fecha-mes">Noviembre</span>
         <span class="fecha-anio">2026</span>
       </div>
       <div class="cuenta revelar" id="cuenta" aria-live="off">
@@ -167,93 +171,69 @@
     <section class="lugares bloque" data-rosa="der">
       <h2 class="titulo revelar">Dónde</h2>
       <article class="lugar revelar">
-        <p class="lugar-tipo">Ceremonia religiosa</p>
-        <h3>Parroquia San Peregrino</h3>
-        <p class="lugar-hora">12:00 p. m.</p>
-        <p class="lugar-dir">Blvd. Solidaridad, Fuentes del Mezquital, 83250 Hermosillo, Son.</p>
-        <a class="boton" href="https://maps.app.goo.gl/NETRS4DCUrBhgXGx9" target="_blank" rel="noopener"><svg><use href="#i-pin"/></svg>Cómo llegar</a>
-      </article>
-      <article class="lugar revelar">
-        <p class="lugar-tipo">Recepción</p>
-        <h3>Salón de Eventos Villa Toscana</h3>
-        <p class="lugar-hora">1:00 p. m.</p>
-        <p class="lugar-dir">C. Quintero Arce 280, Puerta Grande, 83246 Hermosillo, Son.</p>
-        <a class="boton" href="https://maps.app.goo.gl/NEusLqQqZhirLnCAA" target="_blank" rel="noopener"><svg><use href="#i-pin"/></svg>Cómo llegar</a>
+        <p class="lugar-tipo">Misa y recepción</p>
+        <h3>Jardín Villa Flores</h3>
+        <p class="lugar-dir">Del Ejido 2, Ejido de Acapantzingo, 62440 Jiutepec, Mor.</p>
+        <a class="boton" href="https://maps.app.goo.gl/jo9T7E42LpvNfY1Z6" target="_blank" rel="noopener"><svg><use href="#i-pin"/></svg>Cómo llegar</a>
       </article>
     </section>
 
-    <!-- PROGRAMA -->
-    <section class="programa bloque" data-rosa="izq">
-      <h2 class="titulo revelar">Programa</h2>
-      <ol class="linea">
-        <li class="revelar"><svg><use href="#i-iglesia"/></svg><time>12:00</time><span>Misa</span></li>
-        <li class="revelar"><svg><use href="#i-estrella"/></svg><time>13:00</time><span>Recepción</span></li>
-        <li class="revelar"><svg><use href="#i-copa"/></svg><time>13:30</time><span>Cóctel de bienvenida</span></li>
-        <li class="revelar"><svg><use href="#i-plato"/></svg><time>15:00</time><span>Comida</span></li>
-        <li class="revelar"><svg><use href="#i-vals"/></svg><time>17:30</time><span>Vals</span></li>
-        <li class="revelar"><svg><use href="#i-baile"/></svg><time>18:30</time><span>Baile</span></li>
-        <li class="revelar"><svg><use href="#i-luna"/></svg><time>00:00</time><span>Fin de la noche</span></li>
-      </ol>
-    </section>
-
-    <!-- REGALOS -->
-    <section class="regalos bloque" data-rosa="der">
+    <!-- REGALOS: solo lluvia de sobres -->
+    <section class="regalos bloque" data-rosa="izq">
       <h2 class="titulo revelar">Regalos</h2>
-      <p class="regalos-intro revelar">Tu presencia es mi mejor regalo. Si deseas tener un detalle conmigo, aquí tienes algunas opciones.</p>
+      <p class="regalos-intro revelar">Tu presencia es mi mejor regalo. Si deseas tener un detalle conmigo:</p>
       <div class="regalos-grid">
-        <a class="tarjeta revelar" href="https://mesaderegalos.liverpool.com.mx/milistaderegalos/51309081" target="_blank" rel="noopener">
-          <svg><use href="#i-regalo"/></svg>
-          <h3>Mesa de regalos</h3>
-          <p>Liverpool · evento 51309081</p>
-          <span class="enlace">Ver lista</span>
-        </a>
         <div class="tarjeta revelar">
           <svg><use href="#i-sobre"/></svg>
           <h3>Lluvia de sobres</h3>
           <p>La tradición de regalar efectivo dentro de un sobre, el día del evento.</p>
         </div>
-        <div class="tarjeta revelar">
-          <svg><use href="#i-tarjeta"/></svg>
-          <h3>Transferencia</h3>
-          <p>Cuenta <span id="cuenta-banco">0000 0000 0000 0000</span><br>A nombre de: Nombre de la beneficiaria</p>
-          <button class="enlace" type="button" data-copiar="#cuenta-banco"><svg><use href="#i-copiar"/></svg>Copiar cuenta</button>
-        </div>
       </div>
     </section>
 
     <!-- VESTIMENTA -->
-    <section class="vestimenta bloque" data-rosa="izq">
+    <section class="vestimenta bloque" data-rosa="der">
       <svg class="vestimenta-icono revelar"><use href="#i-vestido"/></svg>
       <h2 class="titulo revelar">Código de vestimenta</h2>
       <p class="vestimenta-tipo revelar">Formal</p>
-      <p class="nota revelar">El azul rey queda reservado para la quinceañera.</p>
     </section>
 
     <!-- GALERÍA -->
-    <section class="galeria bloque" data-rosa="der">
+    <section class="galeria bloque" data-rosa="izq" data-ancho>
       <h2 class="titulo revelar">Galería</h2>
       <div class="mosaico" id="mosaico">
-        <button class="m m-alta revelar" type="button" data-full="img/quinceanera-1.jpg"><img src="img/quinceanera-1-sm.jpg" alt="Retrato con estrellas en el cabello" loading="lazy"></button>
-        <button class="m m-rostro revelar" type="button" data-full="img/quinceanera-2.jpg"><img src="img/quinceanera-2-sm.jpg" alt="Retrato con tiara" loading="lazy"></button>
-        <button class="m m-detalle revelar" type="button" data-full="img/quinceanera-2.jpg"><img src="img/quinceanera-2-sm.jpg" alt="Detalle del vestido bordado" loading="lazy"></button>
-        <button class="m m-cinturon revelar" type="button" data-full="img/quinceanera-1.jpg"><img src="img/quinceanera-1-sm.jpg" alt="Detalle del cinturón de cristales" loading="lazy"></button>
+        <button class="m m-alta revelar" type="button" data-full="img/quinceanera-4.jpg"><img src="img/quinceanera-4-sm.jpg" alt="Paloma en la terraza con luces" loading="lazy"></button>
+        <button class="m revelar" type="button" data-full="img/quinceanera-3.jpg"><img src="img/quinceanera-3-sm.jpg" alt="Paloma con vestido de gala" loading="lazy"></button>
+        <button class="m revelar" type="button" data-full="img/quinceanera-5.jpg"><img src="img/quinceanera-5-sm.jpg" alt="Paloma sonriendo" loading="lazy"></button>
+        <button class="m m-ancha revelar" type="button" data-full="img/quinceanera-6.jpg"><img src="img/quinceanera-6-sm.jpg" alt="Retrato de Paloma" loading="lazy"></button>
+        <button class="m revelar" type="button" data-full="img/quinceanera-1.jpg"><img src="img/quinceanera-1-sm.jpg" alt="Paloma con estrellas en el cabello" loading="lazy"></button>
+        <button class="m revelar" type="button" data-full="img/quinceanera-2.jpg"><img src="img/quinceanera-2-sm.jpg" alt="Paloma con tiara de zafiros" loading="lazy"></button>
       </div>
     </section>
 
     <!-- ÁLBUM DE INVITADOS -->
-    <section class="album bloque" id="album" data-rosa="izq">
+    <section class="album bloque" id="album" data-rosa="der" data-ancho>
       <h2 class="titulo revelar">Álbum de la noche</h2>
       <p class="album-intro revelar">El día del evento, sube aquí tus fotos. Todos las verán al instante.</p>
+      <input type="file" id="album-camara" accept="image/*" capture="environment" hidden>
       <input type="file" id="album-input" accept="image/*" multiple hidden>
-      <button class="boton boton-lleno revelar" type="button" id="album-subir"><svg><use href="#i-camara"/></svg>Subir fotos</button>
+      <div class="album-acciones revelar" id="album-acciones">
+        <button class="boton boton-lleno" type="button" id="album-camara-btn"><svg><use href="#i-camara"/></svg>Tomar foto</button>
+        <button class="boton" type="button" id="album-subir"><svg><use href="#i-galeria"/></svg>Elegir de galería</button>
+      </div>
       <div class="album-estado" id="album-estado" role="status" aria-live="polite"></div>
       <div class="album-grid" id="album-grid"></div>
       <button class="boton" type="button" id="album-mas" hidden>Ver más fotos</button>
-      <a class="album-hashtag revelar" href="https://www.instagram.com/explore/tags/xvalison/" target="_blank" rel="noopener"><svg><use href="#i-instagram"/></svg>#XVAlison</a>
+      <div class="album-qr revelar">
+        <div class="album-qr-codigo" id="album-qr" aria-label="Código QR para abrir la cámara del álbum"></div>
+        <p>Escanea este código en la fiesta para abrir la cámara y subir tus fotos al álbum.</p>
+        <button class="enlace" type="button" id="album-qr-compartir">Compartir código QR</button>
+      </div>
+      <a class="album-hashtag revelar" href="https://www.instagram.com/explore/tags/xvpaloma/" target="_blank" rel="noopener"><svg><use href="#i-instagram"/></svg>#XVPaloma</a>
     </section>
 
     <!-- BUZÓN DE DESEOS -->
-    <section class="deseos bloque" data-rosa="der">
+    <section class="deseos bloque" data-rosa="izq">
       <h2 class="titulo revelar">Buzón de deseos</h2>
       <p class="revelar">Déjame un mensaje por mis XV años. Lo recibiré con mucho cariño.</p>
       <form id="form-deseos" class="revelar">
@@ -286,7 +266,7 @@
     <!-- DESPEDIDA -->
     <section class="despedida" data-rosa="final">
       <p class="despedida-texto revelar">Te espero</p>
-      <p class="nombre-script revelar">Alison</p>
+      <p class="nombre-script revelar">Paloma</p>
       <p class="credito">Invitación digital por INIT IDEA</p>
     </section>
   </main>
@@ -328,7 +308,7 @@
   <button class="musica" id="musica" type="button" aria-label="Pausar música" hidden>
     <svg class="ico-on"><use href="#i-sonido"/></svg><svg class="ico-off"><use href="#i-silencio"/></svg>
   </button>
-  <audio id="audio" loop preload="none" src="audio/cancion.mp3"></audio>
+  <audio id="audio" loop preload="none" src="audio/cancion.m4a"></audio>
 
   <div class="aviso" id="aviso" role="status" aria-live="polite"></div>
 </body>

@@ -29,12 +29,21 @@ const lerp = (a, b, t) => a + (b - a) * t;
 function pose(tipo, el) {
   const pc = escritorio.matches;
   switch (tipo) {
-    case 'izq': return pc ? { x: -0.52, y: 0, s: 0.72, a: 1, o: 1 } : { x: -0.18, y: 0.05, s: 0.95, a: 1, o: 0.28 };
-    case 'der': return pc ? { x: 0.52, y: 0, s: 0.72, a: 1, o: 1 } : { x: 0.18, y: 0.05, s: 0.95, a: 1, o: 0.28 };
+    case 'izq':
+    case 'der': {
+      const lado = tipo === 'izq' ? -1 : 1;
+      if (pc) return { x: 0.52 * lado, y: 0, s: 0.72, a: 1, o: 1 };
+      // celular: misma coreografía que escritorio, adaptada al ancho.
+      // Secciones de texto: la rosa se asoma por su lado y el texto se recorre al otro (CSS).
+      // Secciones a todo lo ancho (fotos, fecha, galería, álbum): solo se asoma por la orilla.
+      return el.hasAttribute('data-ancho')
+        ? { x: 0.95 * lado, y: 0.22, s: 0.36, a: 1, o: 1 }
+        : { x: 0.68 * lado, y: 0.02, s: 0.44, a: 1, o: 1 };
+    }
     case 'cierre': {
       // se posa sobre el hueco de la confirmación
       const r = slotCierre.getBoundingClientRect();
-      const y = clamp(1 - (r.top + r.height * 0.55) / (innerHeight / 2), -0.8, 0.8);
+      const y = clamp(1 - (r.top + r.height * 0.4) / (innerHeight / 2), -0.8, 0.8);
       return { x: 0, y, s: pc ? 0.42 : 0.5, a: 0.06, o: 1 };
     }
     case 'final': return { x: 0, y: 0.38, s: pc ? 0.38 : 0.45, a: 0.45, o: pc ? 0.9 : 0.55 };

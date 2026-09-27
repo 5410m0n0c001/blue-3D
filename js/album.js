@@ -6,8 +6,29 @@
 (() => {
   const cfg = window.INVITACION.album;
   const $ = (s) => document.querySelector(s);
-  const grid = $('#album-grid'), estado = $('#album-estado'), input = $('#album-input');
-  const btnSubir = $('#album-subir'), btnMas = $('#album-mas');
+  const grid = $('#album-grid'), estado = $('#album-estado');
+  const input = $('#album-input'), camara = $('#album-camara');
+  const btnSubir = $('#album-subir'), btnCamara = $('#album-camara-btn'), acciones = $('#album-acciones');
+  const btnMas = $('#album-mas');
+
+  // QR para las mesas: abre esta invitación directo en la cámara del álbum
+  const urlQR = `${location.origin}${location.pathname}?action=take-photo`;
+  const cajaQR = $('#album-qr');
+  if (window.QRCode && cajaQR) new QRCode(cajaQR, { text: urlQR, width: 300, height: 300, colorDark: '#0b1633', colorLight: '#f4f6fb', correctLevel: QRCode.CorrectLevel.M });
+  $('#album-qr-compartir')?.addEventListener('click', async () => {
+    const lienzo = cajaQR.querySelector('canvas');
+    if (!lienzo) return;
+    const blob = await new Promise((ok) => lienzo.toBlob(ok, 'image/png'));
+    const archivo = new File([blob], 'qr-album-xv.png', { type: 'image/png' });
+    const datos = { files: [archivo], title: 'Álbum de mis XV', text: 'Escanea este código para subir tus fotos al álbum.' };
+    if (navigator.canShare?.(datos)) {
+      try { await navigator.share(datos); } catch (err) { if (err.name !== 'AbortError') console.warn(err); }
+    } else {
+      const a = document.createElement('a'); // descarga para imprimir
+      a.href = URL.createObjectURL(blob); a.download = archivo.name; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    }
+  });
 
   if (!window.supabase) { mostrarEstado('El álbum no está disponible en este momento.', true); return; }
   const db = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseKey);
@@ -84,13 +105,18 @@
   }
 
   btnSubir.addEventListener('click', () => input.click());
-  input.addEventListener('change', async () => {
-    const archivos = [...input.files].filter((f) => f.type.startsWith('image/') || f.type === '').slice(0, cfg.maxArchivos);
-    input.value = '';
-    if (!archivos.length) return;
-    if (input.files.length > cfg.maxArchivos) window.avisar?.(`Máximo ${cfg.maxArchivos} fotos por envío`);
+  btnCamara.addEventListener('click', () => camara.click()); // abre la app de cámara del celular
+  input.addEventListener('change', () => procesar(input));
+  camara.addEventListener('change', () => procesar(camara));
 
-    btnSubir.disabled = true;
+  async function procesar(origen) {
+    const total = origen.files.length;
+    const archivos = [...origen.files].filter((f) => f.type.startsWith('image/') || f.type === '').slice(0, cfg.maxArchivos);
+    origen.value = '';
+    if (!archivos.length) return;
+    if (total > cfg.maxArchivos) window.avisar?.(`Máximo ${cfg.maxArchivos} fotos por envío`);
+
+    btnSubir.disabled = btnCamara.disabled = true;
     let ok = 0, fallos = 0, ahorro = 0;
     for (let n = 0; n < archivos.length; n++) {
       mostrarEstado(`Subiendo ${n + 1} de ${archivos.length}…`, false, n / archivos.length);
@@ -102,12 +128,12 @@
         fallos++;
       }
     }
-    btnSubir.disabled = false;
+    btnSubir.disabled = btnCamara.disabled = false;
     if (ok && !fallos) mostrarEstado(ok === 1 ? '¡Tu foto ya está en el álbum!' : `¡Tus ${ok} fotos ya están en el álbum!`);
     else if (ok) mostrarEstado(`Se subieron ${ok}; ${fallos} no se pudieron subir. Intenta de nuevo con esas.`, true);
     else mostrarEstado('No se pudo subir. Revisa tu conexión e intenta de nuevo.', true);
     if (ok) { console.info(`Compresión: ${(ahorro / 1048576).toFixed(1)} MB ahorrados`); recargar(); }
-  });
+  }
 
   // ---------- Galería ----------
   const miniDe = (url) => url.replace(/\.jpg$/, '_t.jpg');
@@ -164,7 +190,7 @@
     catch (err) {
       console.warn('Álbum no disponible', err);
       mostrarEstado('El álbum se activará el día del evento.');
-      btnSubir.hidden = true;
+      acciones.hidden = true;
       return false;
     }
   }

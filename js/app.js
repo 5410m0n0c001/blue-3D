@@ -1,7 +1,8 @@
 // Siempre empezar desde el principio al abrir o recargar (no restaurar la posición anterior)
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 scrollTo(0, 0);
-addEventListener('load', () => scrollTo(0, 0));
+// solo mientras el sobre sigue cerrado: si ya entraron (p. ej. al álbum desde el QR), no los regresa
+addEventListener('load', () => { if (document.getElementById('sobre')) scrollTo(0, 0); });
 addEventListener('pageshow', (e) => { if (e.persisted) location.reload(); }); // volver con "atrás" también reinicia
 
 (() => {
@@ -40,6 +41,23 @@ addEventListener('pageshow', (e) => { if (e.persisted) location.reload(); }); //
   // el sello es el botón accesible; tocar cualquier parte del sobre también abre
   sobre.addEventListener('click', abrirSobre);
   sobre.addEventListener('pointerup', abrirSobre);
+
+  // ---------- Llegada desde el QR de las mesas: ?action=take-photo ----------
+  const llegada = $('#llegada');
+  if (new URLSearchParams(location.search).get('action') === 'take-photo') {
+    llegada.hidden = false;
+    $('#llegada-camara').addEventListener('click', () => {
+      // entra directo al álbum (sin sobre ni música) y abre la cámara en el mismo toque
+      llegada.remove();
+      sobre.remove();
+      document.body.classList.remove('sobre-cerrado');
+      btnMusica.hidden = false; btnMusica.classList.add('pausada');
+      btnCompartir.hidden = false; btnCompartir.classList.add('entra');
+      $('#album').scrollIntoView({ behavior: 'instant', block: 'start' });
+      $('#album-camara').click();
+    });
+    $('#llegada-ver').addEventListener('click', () => llegada.remove());
+  }
 
   btnMusica.addEventListener('click', () => {
     if (audio.paused) { audio.play(); btnMusica.classList.remove('pausada'); btnMusica.setAttribute('aria-label', 'Pausar música'); }
