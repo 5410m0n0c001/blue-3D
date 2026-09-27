@@ -26,7 +26,7 @@ Agrega `?debug` a la URL para probar sin música.
 - [ ] Hora de la misa y de la recepción (cuenta regresiva y tarjeta del lugar)
 - [ ] Programa del evento (se retiró la sección hasta tener horarios)
 - [ ] WhatsApp que recibe confirmaciones y mensajes (`js/config.js`)
-- [ ] ¿Padrinos? ¿"Formal" como código de vestimenta? (confirmado: sin azul marino ni dorado; hashtag #XVPaloma)
+- [ ] ¿Padrinos? (confirmado: vestimenta sin azul marino ni dorado; hashtag #XVPaloma)
 
 ## Modelo 3D
 Se genera con Blender 5.2 en modo headless desde `blender/rosa.py` (fuera de este repo)
