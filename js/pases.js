@@ -60,9 +60,10 @@
     if (para) $('#rsvp-nombre').value = para;
   }
 
-  // ================= 2) Modo organizador =================
-  // Solo dura mientras la página está abierta: al recargar vuelve a "Compartir" normal.
-  // (Versiones anteriores lo guardaban en el celular; se borra esa marca vieja.)
+  // ================= 2) Panel de administrador =================
+  // El modo administrador existe solo mientras el panel está abierto (o su menú de compartir).
+  // Al cerrar el panel (×, tocar fuera, Esc o "Salir") se apaga y Compartir vuelve a enviar
+  // solo la invitación. Nada se guarda en el celular (se borra la marca de versiones viejas).
   let activo = false;
   try { localStorage.removeItem('xv-paloma-organizador'); } catch { /* sin almacenamiento */ }
   const btnCompartir = $('#compartir');
@@ -80,7 +81,7 @@
     toques++;
     clearTimeout(reinicio);
     reinicio = setTimeout(() => { toques = 0; }, 900);
-    if (toques >= 3) { toques = 0; activo ? window.avisar('Modo organizador ya activo') : abrirPin(); }
+    if (toques >= 3) { toques = 0; activo ? abrir() : abrirPin(); }
   });
 
   const fondoPin = $('#org-pin'), inputPin = $('#org-pin-input'), errorPin = $('#org-pin-error');
@@ -103,7 +104,7 @@
     }
     activo = true;
     marcar(); cerrarPin();
-    window.avisar('Modo organizador activado');
+    abrir(); // la clave abre directamente el panel
   });
 
   // --- ventana de envío
@@ -148,16 +149,18 @@
     fondoEnvio.hidden = false;
     document.body.style.overflow = 'hidden';
   }
-  function cerrar() { fondoEnvio.hidden = true; document.body.style.overflow = ''; }
-  $('#org-cerrar').addEventListener('click', cerrar);
-  fondoEnvio.addEventListener('click', (e) => { if (e.target === fondoEnvio) cerrar(); });
-  addEventListener('keydown', (e) => { if (e.key === 'Escape') { cerrar(); cerrarPin(); } });
-
-  $('#org-salir').addEventListener('click', () => {
+  const ocultar = () => { fondoEnvio.hidden = true; document.body.style.overflow = ''; };
+  // cerrar el panel = salir del modo administrador
+  function salir() {
+    if (!activo) return;
     activo = false;
-    marcar(); cerrar();
-    window.avisar('Modo organizador desactivado');
-  });
+    ocultar(); marcar();
+    window.avisar('Saliste del panel de administrador');
+  }
+  $('#org-cerrar').addEventListener('click', salir);
+  $('#org-salir').addEventListener('click', salir);
+  fondoEnvio.addEventListener('click', (e) => { if (e.target === fondoEnvio) salir(); });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (!fondoEnvio.hidden) salir(); cerrarPin(); } });
 
   $('#org-enviar').addEventListener('click', () => {
     const nombre = inputNombre.value.replace(/\s+/g, ' ').trim().slice(0, 60);
@@ -182,8 +185,9 @@
       const files = seleccion.map((n, i) => archivos[n] && new File([archivos[n]], `pase-${n}-personas-${i + 1}.jpg`, { type: 'image/jpeg' }));
       if (files.every(Boolean) && (!navigator.canShare || navigator.canShare({ files, text: texto }))) datos.files = files;
     }
-    cerrar();
-    window.compartir(datos); // mismo menú nativo: WhatsApp, Messenger, correo, etc.
+    ocultar();
+    // mismo menú nativo (WhatsApp, Messenger, correo…); al volver, el panel reaparece para enviar otra
+    window.compartir(datos).finally(() => { if (activo) abrir(); });
   });
 
   window.organizador = { activo: () => activo, abrir };
