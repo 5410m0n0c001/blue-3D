@@ -15,9 +15,8 @@ Invitación digital estática (HTML/CSS/JS, sin build) con rosa 3D que se abre c
 - `js/album.js`: "Tomar foto" (abre la cámara) y "Elegir de galería", con compresión en el navegador
   (~1600 px, ≤600 KB + miniatura de 480 px). QR para las mesas: `?action=take-photo` abre directo la cámara.
 - `js/pases.js` + `img/pases/` + `p/N.html`: pases de 1 a 5 personas.
-  Modo organizador: 3 toques en el nombre de la portada + clave (guardada como SHA-256). Mientras la página siga abierta
-  (al recargar se apaga),
-  "Enviar pases" abre una ventana (nombre opcional + pases) y luego el menú nativo. El enlace
+  Modo organizador: 3 toques en el nombre de la portada + clave (guardada como SHA-256). Solo mientras el panel está
+  abierto: "Compartir" abre una ventana (nombre opcional + pases) y luego el menú nativo. El enlace
   `p/N.html?pases=5,2&para=…` muestra la tarjeta del pase como vista previa y redirige a la invitación,
   que saluda al invitado, muestra sus pases y limita la confirmación a sus lugares.
 - `supabase/setup.sql`: bucket con límite de 2 MB, sin UPDATE anónimo y validación de URLs.
