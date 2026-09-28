@@ -149,7 +149,6 @@ body.sobre-cerrado .marco img { opacity: 0; }
   transform: translate3d(0, calc((1 - clamp(0, calc((var(--p) - 0.5) * 3), 1)) * 24px), 0);
 }
 .portada-nombre .nombre-script { font-size: clamp(4.4rem, 22vw, 8rem); line-height: 0.9; }
-.portada-lema { margin-top: 0.4rem; font: italic 300 1.2rem var(--f-display); color: var(--plata); letter-spacing: 0.08em; }
 .polvo {
   position: absolute; inset: -30% 0; pointer-events: none;
   background-image:

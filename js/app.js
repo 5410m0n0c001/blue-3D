@@ -183,7 +183,7 @@ addEventListener('pageshow', (e) => { if (e.persisted) location.reload(); }); //
 
     const datos = {
       title: document.title,
-      text: 'Te invito a celebrar mis XV años. ¡Una Noche de Zafiro!',
+      text: 'Te invito a celebrar mis XV años el sábado 28 de noviembre. ¡Acompáñame!',
       url: location.origin + location.pathname,
     };
     if (navigator.share) {
