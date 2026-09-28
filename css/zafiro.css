@@ -336,9 +336,11 @@ legend { font-size: 0.85rem; letter-spacing: 0.1em; color: var(--plata); margin-
 .opcion:has(input:checked) { border-color: var(--plata); background: var(--vidrio); }
 
 /* ============ Despedida ============ */
-.despedida { text-align: center; padding: 3rem var(--lado) calc(4rem + env(safe-area-inset-bottom)); }
+.despedida { text-align: center; padding: 3rem var(--lado) calc(9.5rem + env(safe-area-inset-bottom)); } /* libre de los botones fijos */
 .despedida-texto { font: italic 300 1.6rem var(--f-display); color: var(--plata); }
 .despedida .nombre-script { font-size: clamp(4.4rem, 22vw, 7rem); line-height: 1.1; }
+.boton-credito { margin-top: 1rem; min-height: 2.6rem; padding: 0.55rem 1.2rem; font-size: 0.72rem; border-color: var(--linea); color: var(--plata); }
+.boton-credito svg { width: 1em; height: 1em; }
 .credito { margin-top: 3.5rem; font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--plata-suave); opacity: 0.7; }
 
 /* ============ Visor ============ */
