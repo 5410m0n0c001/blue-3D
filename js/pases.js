@@ -1,8 +1,8 @@
 // Pases de acceso.
 //  1) Invitado: el enlace trae ?pases=5,2&para=Familia%20López → saludo, sección "Tus pases"
 //     y confirmación limitada a sus lugares. Nada se guarda en servidor: todo va en el enlace.
-//  2) Organizador: 3 toques en el nombre de la portada + clave. En ese celular, el botón
-//     Compartir abre primero la ventana para elegir nombre y pases, y luego el menú nativo.
+//  2) Organizador: 3 toques en el nombre de la portada + clave. Mientras la página siga abierta,
+//     el botón Compartir abre primero la ventana de pases y luego el menú nativo. Al recargar se apaga.
 (() => {
   const $ = (s, el = document) => el.querySelector(s);
   const CLAVE_SHA256 = '87176a1aed0cf090ff28e89a643fd975c58a78583d789a7c3c46ca39a1f265f8';
@@ -61,9 +61,10 @@
   }
 
   // ================= 2) Modo organizador =================
-  const LLAVE = 'xv-paloma-organizador';
+  // Solo dura mientras la página está abierta: al recargar vuelve a "Compartir" normal.
+  // (Versiones anteriores lo guardaban en el celular; se borra esa marca vieja.)
   let activo = false;
-  try { activo = localStorage.getItem(LLAVE) === '1'; } catch { /* sin almacenamiento */ }
+  try { localStorage.removeItem('xv-paloma-organizador'); } catch { /* sin almacenamiento */ }
   const btnCompartir = $('#compartir');
   const textoBoton = btnCompartir.querySelector('span');
   function marcar() {
@@ -101,7 +102,6 @@
       errorPin.hidden = false; inputPin.select(); return;
     }
     activo = true;
-    try { localStorage.setItem(LLAVE, '1'); } catch { /* sin almacenamiento: dura esta visita */ }
     marcar(); cerrarPin();
     window.avisar('Modo organizador activado');
   });
@@ -155,7 +155,6 @@
 
   $('#org-salir').addEventListener('click', () => {
     activo = false;
-    try { localStorage.removeItem(LLAVE); } catch { /* sin almacenamiento */ }
     marcar(); cerrar();
     window.avisar('Modo organizador desactivado');
   });
