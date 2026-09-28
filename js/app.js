@@ -174,23 +174,27 @@ addEventListener('pageshow', (e) => { if (e.persisted) location.reload(); }); //
   // El menú se abre en el mismo toque (Safari lo exige) mientras el ícono gira y florece en rosa;
   // al cerrarse, la rosa vuelve a ser el ícono de compartir.
   let regreso;
-  btnCompartir.addEventListener('click', async () => {
+  // Comparte con el menú nativo del celular (WhatsApp, Messenger, correo…) mientras el ícono
+  // gira y florece. `datos` = { title, text, url?, files? }. Lo usa también el modo organizador.
+  window.compartir = async (datos) => {
     clearTimeout(regreso);
     btnCompartir.classList.remove('vuelve', 'brilla', 'girando');
     void btnCompartir.offsetWidth; // reinicia la animación si se toca dos veces
     btnCompartir.classList.add('girando');
     const inicio = performance.now();
 
-    const datos = {
-      title: document.title,
-      text: 'Te invito a celebrar mis XV años el sábado 28 de noviembre. ¡Acompáñame!',
-      url: location.origin + location.pathname,
-    };
     if (navigator.share) {
       try { await navigator.share(datos); } catch (err) { if (err.name !== 'AbortError') console.warn(err); }
     } else {
-      try { await navigator.clipboard.writeText(datos.url); window.avisar('Enlace copiado, ¡compártelo!'); }
-      catch { window.avisar(datos.url); }
+      // sin menú nativo (algunas computadoras): copia el texto y descarga los pases
+      const texto = [datos.text, datos.url].filter(Boolean).join('\n');
+      try { await navigator.clipboard.writeText(texto); window.avisar('Mensaje copiado, ¡pégalo donde quieras!'); }
+      catch { window.avisar(datos.url || datos.text); }
+      (datos.files || []).forEach((f) => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(f); a.download = f.name; a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      });
     }
     // deja ver la rosa abierta al menos ~2.5 s y luego regresa al ícono
     const espera = Math.max(1200, 2500 - (performance.now() - inicio));
@@ -198,6 +202,14 @@ addEventListener('pageshow', (e) => { if (e.persisted) location.reload(); }); //
       btnCompartir.classList.remove('girando');
       btnCompartir.classList.add('vuelve');
     }, espera);
+  };
+  btnCompartir.addEventListener('click', () => {
+    if (window.organizador?.activo()) { window.organizador.abrir(); return; } // elige pases primero
+    window.compartir({
+      title: document.title,
+      text: 'Te invito a celebrar mis XV años el sábado 28 de noviembre. ¡Acompáñame!',
+      url: location.origin + location.pathname,
+    });
   });
   // un destello suave de vez en cuando para recordar que existe
   setInterval(() => {
@@ -217,8 +229,14 @@ addEventListener('pageshow', (e) => { if (e.persisted) location.reload(); }); //
     e.preventDefault();
     const nombre = $('#rsvp-nombre').value.trim();
     const asiste = $('input[name="asiste"]:checked').value === 'si';
-    abrirWhatsApp(asiste
-      ? `Hola, soy ${nombre} y confirmo mi asistencia a tus XV años.`
-      : `Hola, soy ${nombre}. Lamentablemente no podré asistir a tus XV años. ¡Muchas felicidades!`);
+    const inv = window.invitado || {}; // viene del enlace con pases (js/pases.js)
+    const quien = inv.para && inv.para !== nombre ? `${nombre} (${inv.para})` : nombre;
+    let texto;
+    if (!asiste) texto = `Hola, soy ${quien}. Lamentablemente no podré asistir a tus XV años. ¡Muchas felicidades!`;
+    else if (inv.lugares) {
+      const n = +$('#rsvp-cuantos').value;
+      texto = `¡Hola! ${quien} confirma la asistencia de ${n} de ${inv.lugares} ${inv.lugares === 1 ? 'lugar' : 'lugares'} para tus XV años.`;
+    } else texto = `Hola, soy ${quien} y confirmo mi asistencia a tus XV años.`;
+    abrirWhatsApp(texto);
   });
 })();

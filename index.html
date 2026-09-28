@@ -47,6 +47,7 @@
   </script>
   <script src="js/config.js"></script>
   <script defer src="js/app.js"></script>
+  <script defer src="js/pases.js"></script>
   <script type="module" src="js/rosa3d.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -142,6 +143,7 @@
     <!-- NOMBRE E INVITACIÓN -->
     <section class="invitacion bloque" data-rosa="der">
       <h2 class="nombre-completo revelar"><span class="nombre-script">Paloma</span><span class="apellidos">Polet González Delgado</span></h2>
+      <p class="para-quien revelar" id="para-quien" hidden></p>
       <p class="cita revelar">Porque este día es muy importante para mí, quiero compartirlo con las personas que llevo en mi corazón. Tú eres una de ellas. Me encantaría que estuvieras presente en uno de los días más inolvidables de mi vida.</p>
     </section>
 
@@ -261,6 +263,14 @@
       </form>
     </section>
 
+    <!-- PASES DEL INVITADO (solo si el enlace trae ?pases=...) -->
+    <section class="mis-pases bloque" id="mis-pases" data-rosa="der" data-ancho>
+      <h2 class="titulo revelar">Tus pases</h2>
+      <p class="mis-pases-texto revelar" id="mis-pases-texto"></p>
+      <div class="mis-pases-grid" id="mis-pases-grid"></div>
+      <p class="nota revelar">Presenta tus pases en la entrada. Toca uno para verlo en grande.</p>
+    </section>
+
     <!-- CONFIRMACIÓN: la rosa vuelve, cerrada -->
     <section class="confirmar" id="confirmar" data-rosa="cierre">
       <div class="rosa-slot rosa-slot-cierre" data-rosa-slot="cierre">
@@ -276,6 +286,11 @@
             <label class="opcion"><input type="radio" name="asiste" value="si" checked><span>Sí, asistiré</span></label>
             <label class="opcion"><input type="radio" name="asiste" value="no"><span>No podré asistir</span></label>
           </fieldset>
+          <div class="rsvp-lugares" id="rsvp-lugares" hidden>
+            <label for="rsvp-cuantos">¿Cuántas personas asistirán?</label>
+            <select id="rsvp-cuantos"></select>
+            <p class="rsvp-max" id="rsvp-max"></p>
+          </div>
           <button class="boton boton-lleno" type="submit"><svg><use href="#i-whatsapp"/></svg>Confirmar</button>
         </form>
       </div>
@@ -289,6 +304,41 @@
       <a class="boton boton-credito" href="https://5410m0n0c001.github.io/INIT-IDEA/invitaciones.html" target="_blank" rel="noopener"><svg><use href="#i-estrella"/></svg>Yo quiero la mía</a>
     </section>
   </main>
+
+  <!-- Modo organizador: clave (3 toques en el nombre de la portada) -->
+  <div class="org-fondo" id="org-pin" hidden>
+    <form class="org-panel" id="org-pin-form" role="dialog" aria-modal="true" aria-labelledby="org-pin-titulo">
+      <h2 class="org-titulo" id="org-pin-titulo">Modo organizador</h2>
+      <label for="org-pin-input">Clave</label>
+      <input id="org-pin-input" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" required>
+      <p class="org-error" id="org-pin-error" hidden>Clave incorrecta</p>
+      <button class="boton boton-lleno" type="submit">Entrar</button>
+      <button class="enlace org-secundario" type="button" id="org-pin-cancelar">Cancelar</button>
+    </form>
+  </div>
+
+  <!-- Modo organizador: elegir pases antes de compartir -->
+  <div class="org-fondo" id="org-envio" hidden>
+    <div class="org-panel" role="dialog" aria-modal="true" aria-labelledby="org-envio-titulo">
+      <button class="org-cerrar" type="button" id="org-cerrar" aria-label="Cerrar">×</button>
+      <h2 class="org-titulo" id="org-envio-titulo">Enviar invitación</h2>
+      <label for="org-nombre">Nombre del invitado <span>(opcional)</span></label>
+      <input id="org-nombre" type="text" maxlength="60" placeholder="Ej. Familia López" autocomplete="off">
+      <p class="org-sub">Toca los pases que vas a enviar</p>
+      <div class="org-pases" id="org-pases">
+        <button type="button" data-n="1"><img src="img/pases/pase-1.jpg" alt=""><span>1</span></button>
+        <button type="button" data-n="2"><img src="img/pases/pase-2.jpg" alt=""><span>2</span></button>
+        <button type="button" data-n="3"><img src="img/pases/pase-3.jpg" alt=""><span>3</span></button>
+        <button type="button" data-n="4"><img src="img/pases/pase-4.jpg" alt=""><span>4</span></button>
+        <button type="button" data-n="5"><img src="img/pases/pase-5.jpg" alt=""><span>5</span></button>
+      </div>
+      <div class="org-elegidos" id="org-elegidos" aria-live="polite"></div>
+      <p class="org-total" id="org-total"></p>
+      <label class="org-check"><input type="checkbox" id="org-adjuntar" checked> Adjuntar las imágenes de los pases</label>
+      <button class="boton boton-lleno" type="button" id="org-enviar">Compartir</button>
+      <button class="enlace org-secundario" type="button" id="org-salir">Salir del modo organizador</button>
+    </div>
+  </div>
 
   <!-- Visor de fotos -->
   <div class="visor" id="visor" hidden>
