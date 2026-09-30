@@ -30,7 +30,7 @@ Agrega `?debug` a la URL para probar sin música.
 ## Pendiente del cliente (Paloma, 28 nov 2026)
 - [ ] Hora de la misa y de la recepción (cuenta regresiva y tarjeta del lugar)
 - [ ] Programa del evento (se retiró la sección hasta tener horarios)
-- [ ] WhatsApp que recibe confirmaciones y mensajes (`js/config.js`)
+- [x] WhatsApp de confirmaciones: 777 441 9071
 - [ ] ¿Padrinos? (confirmado: vestimenta sin azul marino ni dorado; hashtag #XVPaloma)
 
 ## Modelo 3D
