@@ -126,7 +126,87 @@
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden && camaraAbierta) setTimeout(() => { if (camaraAbierta && !camara.files.length) terminarCamara(); }, 1500);
   });
-  btnCamara.addEventListener('click', () => { window.prepararCamara(); camara.click(); }); // abre la app de cámara
+  // ---------- Cámara dentro de la invitación (Android) ----------
+  // En Android, abrir la app de cámara manda el navegador a segundo plano y, con poca memoria,
+  // el sistema lo cierra ("memoria insuficiente"). Con getUserMedia la cámara vive dentro de la
+  // página: no hay cambio de app y la invitación no se cierra. En iPhone se usa la cámara nativa.
+  const esAndroid = /Android/i.test(navigator.userAgent) || new URLSearchParams(location.search).has('camaraweb');
+  const modal = $('#camara'), video = $('#camara-video'), vista = $('#camara-vista');
+  let flujo = null, frente = false, capturada = null;
+
+  async function encender() {
+    if (flujo) flujo.getTracks().forEach((t) => t.stop());
+    flujo = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: { facingMode: frente ? 'user' : 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
+    });
+    video.srcObject = flujo;
+    video.classList.toggle('espejo', frente);
+    await video.play();
+  }
+  function apagar() {
+    if (flujo) flujo.getTracks().forEach((t) => t.stop()); // libera la cámara y su memoria
+    flujo = null; video.srcObject = null;
+  }
+  async function abrirCamaraWeb() {
+    window.prepararCamara();
+    try { sessionStorage.removeItem('camara-pendiente'); } catch { /* la página no se va a segundo plano */ }
+    camaraAbierta = false;
+    const r = window.retoActual;
+    $('#camara-reto').textContent = r ? r.reto : '';
+    $('#camara-reto').hidden = !r;
+    modal.hidden = false; vista.hidden = true; video.hidden = false;
+    modal.classList.remove('revisando');
+    document.body.style.overflow = 'hidden';
+    try { await encender(); }
+    catch (err) {
+      console.warn('Cámara web no disponible, se usa la del sistema', err);
+      cerrarCamaraWeb();
+      window.prepararCamara(); camara.click();
+    }
+  }
+  function cerrarCamaraWeb() {
+    apagar();
+    modal.hidden = true; document.body.style.overflow = '';
+    if (capturada) { URL.revokeObjectURL(vista.src); capturada = null; }
+    terminarCamara();
+  }
+  $('#camara-cerrar').addEventListener('click', cerrarCamaraWeb);
+  $('#camara-voltear').addEventListener('click', async () => { frente = !frente; try { await encender(); } catch { frente = !frente; } });
+  $('#camara-disparo').addEventListener('click', () => {
+    const w0 = video.videoWidth, h0 = video.videoHeight;
+    if (!w0) return;
+    const k = Math.min(1, cfg.maxLado / Math.max(w0, h0));
+    const c = document.createElement('canvas');
+    c.width = Math.round(w0 * k); c.height = Math.round(h0 * k);
+    c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
+    c.toBlob((blob) => {
+      if (!blob) return;
+      capturada = new File([blob], `camara-${Date.now()}.jpg`, { type: 'image/jpeg' });
+      vista.src = URL.createObjectURL(blob);
+      vista.hidden = false; video.hidden = true;
+      modal.classList.add('revisando');
+      apagar(); // mientras revisa la foto no se necesita la cámara encendida
+    }, 'image/jpeg', 0.88);
+  });
+  $('#camara-repetir').addEventListener('click', async () => {
+    URL.revokeObjectURL(vista.src); capturada = null;
+    vista.hidden = true; video.hidden = false; modal.classList.remove('revisando');
+    try { await encender(); } catch { cerrarCamaraWeb(); }
+  });
+  $('#camara-subir').addEventListener('click', async () => {
+    const f = capturada; capturada = null;
+    cerrarCamaraWeb();
+    $('#album').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (f) await procesarArchivos([f], 1);
+  });
+
+  // Punto único para abrir la cámara (botón del álbum, reto de la ruleta y QR de las mesas)
+  window.abrirCamara = () => {
+    if (esAndroid && navigator.mediaDevices?.getUserMedia) abrirCamaraWeb();
+    else { window.prepararCamara(); camara.click(); } // cámara nativa del sistema
+  };
+  btnCamara.addEventListener('click', () => window.abrirCamara());
   input.addEventListener('change', () => procesar(input));
   camara.addEventListener('change', async () => { camaraAbierta = false; await procesar(camara); terminarCamara(); });
 
@@ -135,10 +215,14 @@
     mostrarEstado('Tu celular cerró la invitación al abrir la cámara (poca memoria). Toma la foto con la cámara normal del celular y súbela con «Elegir de galería».', true);
   }
 
-  async function procesar(origen) {
-    const total = origen.files.length;
-    const archivos = [...origen.files].filter((f) => f.type.startsWith('image/') || f.type === '').slice(0, cfg.maxArchivos);
+  function procesar(origen) {
+    const lista = [...origen.files];
     origen.value = '';
+    return procesarArchivos(lista, lista.length);
+  }
+
+  async function procesarArchivos(lista, total) {
+    const archivos = lista.filter((f) => f.type.startsWith('image/') || f.type === '').slice(0, cfg.maxArchivos);
     if (!archivos.length) return;
     if (total > cfg.maxArchivos) window.avisar?.(`Máximo ${cfg.maxArchivos} fotos por envío`);
 

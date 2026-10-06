@@ -19,6 +19,10 @@ Invitación digital estática (HTML/CSS/JS, sin build) con rosa 3D que se abre c
   abierto: "Compartir" abre una ventana (nombre opcional + pases) y luego el menú nativo. El enlace
   `p/N.html?pases=5,2&para=…` muestra la tarjeta del pase como vista previa y redirige a la invitación,
   que saluda al invitado, muestra sus pases y limita la confirmación a sus lugares.
+- `js/retos.js`: ruleta de retos (10 categorías × 20 = 200 retos) debajo del álbum; "Tomar foto del reto"
+  abre la cámara del álbum.
+- Cámara: en Android se usa una cámara dentro de la página (getUserMedia) para que el sistema no cierre
+  el navegador por memoria; en iPhone, la cámara nativa. `diag/camara.html` compara ambas en un equipo.
 - `supabase/setup.sql`: bucket con límite de 2 MB, sin UPDATE anónimo y validación de URLs.
 
 ## Probar en local
@@ -28,8 +32,7 @@ npx http-server . -p 4500 -c-1
 Agrega `?debug` a la URL para probar sin música.
 
 ## Pendiente del cliente (Paloma, 28 nov 2026)
-- [ ] Hora de la misa y de la recepción (cuenta regresiva y tarjeta del lugar)
-- [ ] Programa del evento (se retiró la sección hasta tener horarios)
+- [x] Programa: misa 3:30 pm … fin de fiesta 3:30 am
 - [x] WhatsApp de confirmaciones: 777 441 9071
 - [ ] ¿Padrinos? (confirmado: vestimenta sin azul marino ni dorado; hashtag #XVPaloma)
 

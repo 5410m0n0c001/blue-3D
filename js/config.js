@@ -1,8 +1,7 @@
 // Datos del evento que usa el JavaScript. Los textos visibles viven en index.html.
-// PENDIENTE (cliente): hora del evento.
 window.INVITACION = {
-  // Fecha del evento con zona horaria (Morelos = UTC-6). Sin hora confirmada: cuenta hasta el inicio del día.
-  fechaEvento: '2026-11-28T00:00:00-06:00',
+  // Inicio de la misa con zona horaria (Morelos = UTC-6)
+  fechaEvento: '2026-11-28T15:30:00-06:00',
 
   // WhatsApp que recibe confirmaciones y el buzón de deseos (lada + número, sin espacios)
   whatsapp: '527774419071',

@@ -69,8 +69,7 @@ addEventListener('pageshow', (e) => { if (e.persisted) location.reload(); }); //
     llegada.hidden = false;
     $('#llegada-camara').addEventListener('click', () => {
       entrarAlAlbum();
-      window.prepararCamara?.();
-      $('#album-camara').click(); // en el mismo toque, para que el navegador lo permita
+      window.abrirCamara?.(); // en el mismo toque, para que el navegador lo permita
     });
     $('#llegada-ver').addEventListener('click', () => llegada.remove());
   }

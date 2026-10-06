@@ -245,13 +245,16 @@ body.sobre-cerrado .marco img { opacity: 0; }
 /* ============ Programa ============ */
 .linea { list-style: none; margin: 0; padding: 0 0 0 0.2rem; position: relative; }
 .linea::before { content: ""; position: absolute; left: 1.45rem; top: 1rem; bottom: 1rem; width: 1px; background: linear-gradient(var(--linea), var(--plata-suave), var(--linea)); }
-.linea li { display: grid; grid-template-columns: 2.5rem 4rem 1fr; align-items: center; gap: 0.9rem; padding: 0.75rem 0; position: relative; }
+.linea li { display: grid; grid-template-columns: 2.5rem 4.6rem 1fr; align-items: center; gap: 0.9rem; padding: 0.75rem 0; position: relative; }
 .linea svg { width: 2.5rem; height: 2.5rem; padding: 0.55rem; border-radius: 50%; background: var(--medianoche); border: 1px solid var(--linea); color: var(--plata); position: relative; }
 .linea time { font: 400 1.3rem var(--f-display); color: var(--champan); font-variant-numeric: tabular-nums; }
 .linea span { font-size: 1.02rem; color: var(--estrella); }
+.linea time small { font: 500 0.7rem var(--f-texto); letter-spacing: 0.08em; color: var(--plata-suave); }
 
 /* ============ Regalos ============ */
 .regalos-intro { margin-bottom: 2rem; color: var(--plata); }
+.regalos-lema { font: italic 300 1.45rem/1.3 var(--f-display); color: var(--champan); margin: -0.8rem 0 1.6rem; }
+.tarjeta p + p { margin-top: 0.8rem; }
 .regalos-grid { display: grid; gap: 1rem; }
 .tarjeta {
   display: block; text-decoration: none; padding: 1.5rem 1.4rem; border-radius: 20px;
@@ -342,6 +345,40 @@ legend { font-size: 0.85rem; letter-spacing: 0.1em; color: var(--plata); margin-
 .boton-credito { margin-top: 1rem; min-height: 2.6rem; padding: 0.55rem 1.2rem; font-size: 0.72rem; border-color: var(--linea); color: var(--plata); }
 .boton-credito svg { width: 1em; height: 1em; }
 .credito { margin-top: 3.5rem; font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--plata-suave); opacity: 0.7; }
+
+/* ============ Ruleta de retos ============ */
+.retos { margin: 2.6rem auto 0; max-width: 22rem; }
+.retos-titulo { font: 400 1.9rem var(--f-display); color: var(--estrella); }
+.retos-texto { color: var(--plata); margin: 0.3rem 0 1.4rem; font-size: 0.95rem; }
+.ruleta { position: relative; width: min(18rem, 78vw); aspect-ratio: 1; margin: 0 auto; }
+.ruleta svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.45)); }
+.ruleta-rueda { transform-box: view-box; transform-origin: 0 0; }
+.ruleta .sector-a { fill: #1f3a8a; stroke: rgba(201, 206, 216, 0.55); stroke-width: 0.6; }
+.ruleta .sector-b { fill: #0e1c45; stroke: rgba(201, 206, 216, 0.55); stroke-width: 0.6; }
+.ruleta text { fill: var(--estrella); font: 500 8px var(--f-texto); letter-spacing: 0.06em; text-transform: uppercase; }
+.ruleta-aro { fill: none; stroke: var(--plata); stroke-width: 2.2; }
+.ruleta-aguja { position: absolute; left: 50%; top: -0.6rem; translate: -50% 0; width: 0; height: 0; border-left: 0.75rem solid transparent; border-right: 0.75rem solid transparent; border-top: 1.4rem solid var(--plata); filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.5)); }
+.ruleta-centro { position: absolute; left: 50%; top: 50%; translate: -50% -50%; width: 26%; aspect-ratio: 1; border-radius: 50%; border: 2px solid var(--plata); background: radial-gradient(circle at 35% 30%, #fbfcff, #c9ced8 55%, #8e97ab); color: var(--zafiro-hondo); font: 600 0.78rem var(--f-texto); letter-spacing: 0.1em; text-transform: uppercase; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4); }
+.ruleta-centro:disabled { opacity: 0.85; }
+.reto-carta { margin-top: 1.4rem; padding: 1.3rem 1.2rem; border-radius: 20px; border: 1px solid var(--plata); background: linear-gradient(180deg, rgba(31, 58, 138, 0.35), rgba(11, 22, 51, 0.6)); display: grid; gap: 0.8rem; justify-items: center; animation: reto-entra 0.5s cubic-bezier(.2,1.2,.4,1); }
+.reto-cat { font: 500 0.72rem var(--f-texto); letter-spacing: 0.35em; text-transform: uppercase; color: var(--plata-suave); padding-left: 0.35em; }
+.reto-texto { font: italic 400 1.35rem/1.35 var(--f-display); color: var(--estrella); }
+@keyframes reto-entra { from { transform: scale(0.9); opacity: 0; } }
+
+/* ============ Cámara dentro de la invitación ============ */
+.camara { position: fixed; inset: 0; z-index: 130; background: #000; display: grid; }
+.camara[hidden] { display: none; }
+.camara video, .camara img { width: 100%; height: 100%; object-fit: cover; grid-area: 1 / 1; }
+.camara video.espejo { transform: scaleX(-1); }
+.camara-reto { position: absolute; top: calc(env(safe-area-inset-top) + 1rem); left: 1rem; right: 1rem; margin: 0; padding: 0.7rem 1rem; border-radius: 14px; background: rgba(7, 15, 36, 0.72); color: var(--estrella); font: italic 400 1.1rem/1.3 var(--f-display); text-align: center; }
+.camara-controles, .camara-revisar { position: absolute; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom) + 1.6rem); display: flex; align-items: center; justify-content: space-evenly; }
+.camara-revisar { display: none; justify-content: center; gap: 0.8rem; }
+.camara.revisando .camara-controles { display: none; }
+.camara.revisando .camara-revisar { display: flex; }
+.camara-btn { width: 3.2rem; height: 3.2rem; border-radius: 50%; border: 0; background: rgba(255, 255, 255, 0.16); color: #fff; font-size: 1.8rem; line-height: 1; display: grid; place-items: center; }
+.camara-btn svg { width: 1.6rem; height: 1.6rem; }
+.camara-disparo { width: 4.6rem; height: 4.6rem; border-radius: 50%; border: 4px solid #fff; background: rgba(255, 255, 255, 0.25); box-shadow: inset 0 0 0 4px rgba(0, 0, 0, 0.35); }
+.camara-disparo:active { background: #fff; }
 
 /* ============ Pases del invitado ============ */
 .para-quien { margin: -0.6rem 0 1.6rem; font: italic 300 1.5rem var(--f-display); color: var(--champan); }

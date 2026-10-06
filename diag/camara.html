@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Diagnóstico de cámara</title>
+<style>
+  body { margin: 0; padding: 1.2rem; font: 16px/1.5 system-ui, sans-serif; background: #0b1633; color: #f4f6fb; }
+  h1 { font-size: 1.3rem; } h2 { font-size: 1.05rem; margin-top: 1.6rem; }
+  button, label.btn { display: block; width: 100%; margin: 0.5rem 0; padding: 0.9rem; border-radius: 12px; border: 0; background: #c9ced8; color: #0b1633; font: 600 1rem system-ui; text-align: center; }
+  pre { white-space: pre-wrap; background: rgba(255,255,255,0.06); padding: 0.8rem; border-radius: 10px; font-size: 0.85rem; }
+  video { width: 100%; border-radius: 10px; background: #000; margin-top: 0.5rem; }
+  .ok { color: #9fe3a8; } .mal { color: #f3b2b2; }
+</style>
+</head>
+<body>
+<h1>Diagnóstico de cámara · Mis XV Paloma</h1>
+<p>Página sin animaciones ni 3D. Haz las dos pruebas y luego toca «Copiar reporte» y envíalo.</p>
+
+<h2>Prueba 1 · Cámara del sistema (app de cámara)</h2>
+<label class="btn" for="nativa">Abrir cámara del sistema</label>
+<input id="nativa" type="file" accept="image/*" capture="environment" hidden>
+
+<h2>Prueba 2 · Cámara dentro de la página</h2>
+<button id="web">Encender cámara dentro de la página</button>
+<button id="foto" hidden>Tomar foto</button>
+<video id="v" playsinline muted hidden></video>
+
+<button id="copiar" style="margin-top:1.6rem">Copiar reporte</button>
+<pre id="log"></pre>
+
+<script>
+  const log = (t, c) => { const l = document.getElementById('log'); l.innerHTML += `<span class="${c || ''}">${t}</span>\n`; };
+  // ¿la página se recargó mientras la cámara del sistema estaba abierta?
+  const marca = sessionStorage.getItem('diag-camara');
+  if (marca) { log(`⚠ La página se RECARGÓ tras abrir la cámara del sistema (${Math.round((Date.now() - +marca) / 1000)} s): Android cerró el navegador por memoria.`, 'mal'); sessionStorage.removeItem('diag-camara'); }
+  log(`Equipo: ${navigator.userAgent}`);
+  log(`Memoria del equipo (aprox.): ${navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'no disponible'} · Núcleos: ${navigator.hardwareConcurrency || '?'}`);
+  log(`Pantalla: ${screen.width}×${screen.height} @${devicePixelRatio}x`);
+  if (navigator.storage?.estimate) navigator.storage.estimate().then((e) => log(`Espacio para el navegador: ${(e.quota / 1e9).toFixed(1)} GB`));
+
+  const nativa = document.getElementById('nativa');
+  document.querySelector('label[for=nativa]').addEventListener('click', () => sessionStorage.setItem('diag-camara', Date.now()));
+  nativa.addEventListener('change', async () => {
+    sessionStorage.removeItem('diag-camara');
+    const f = nativa.files[0];
+    if (!f) { log('Prueba 1: se canceló la cámara.'); return; }
+    log(`Prueba 1 ✓ foto recibida: ${(f.size / 1048576).toFixed(1)} MB, ${f.type || 'sin tipo'}`, 'ok');
+    try {
+      const bmp = await createImageBitmap(f, { resizeWidth: 1600, resizeQuality: 'high' });
+      log(`Prueba 1 ✓ foto procesada a ${bmp.width}×${bmp.height}`, 'ok'); bmp.close();
+    } catch (e) { log(`Prueba 1 ✗ no se pudo procesar: ${e.message}`, 'mal'); }
+  });
+
+  const v = document.getElementById('v'), btnFoto = document.getElementById('foto');
+  document.getElementById('web').addEventListener('click', async () => {
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
+      v.srcObject = s; v.hidden = false; await v.play(); btnFoto.hidden = false;
+      log(`Prueba 2 ✓ cámara encendida: ${v.videoWidth}×${v.videoHeight}`, 'ok');
+    } catch (e) { log(`Prueba 2 ✗ ${e.name}: ${e.message}`, 'mal'); }
+  });
+  btnFoto.addEventListener('click', () => {
+    const c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight;
+    c.getContext('2d').drawImage(v, 0, 0);
+    c.toBlob((b) => { log(`Prueba 2 ✓ foto tomada: ${(b.size / 1024).toFixed(0)} KB`, 'ok'); v.srcObject.getTracks().forEach((t) => t.stop()); v.hidden = true; btnFoto.hidden = true; }, 'image/jpeg', 0.88);
+  });
+  document.getElementById('copiar').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(document.getElementById('log').innerText); alert('Reporte copiado'); } catch { alert('Selecciona el texto y cópialo manualmente'); }
+  });
+</script>
+</body>
+</html>
