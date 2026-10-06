@@ -32,7 +32,7 @@ npx http-server . -p 4500 -c-1
 Agrega `?debug` a la URL para probar sin música.
 
 ## Pendiente del cliente (Paloma, 28 nov 2026)
-- [x] Programa: misa 3:30 pm … fin de fiesta 3:30 am
+- [x] Programa: misa 3:30 pm … fin de la fiesta 3:30 am (12 momentos)
 - [x] WhatsApp de confirmaciones: 777 441 9071
 - [ ] ¿Padrinos? (confirmado: vestimenta sin azul marino ni dorado; hashtag #XVPaloma)
 
